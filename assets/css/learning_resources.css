@@ -1,0 +1,82 @@
+/* Page-specific styles for learning_resources.php */
+
+/* Card visuals for the dashboard resource cards */
+.resource-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid rgba(28,61,90,0.06);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 8px 22px rgba(28,61,90,0.05);
+  text-align: center;
+}
+
+.resource-card h3 {
+  font-size: 20px;
+  margin: 6px 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.resource-card p {
+  color: #2b3b4a;
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+
+/* Arrange resource cards horizontally with wrapping */
+.resources {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  align-items: stretch;
+  padding: 8px 0;
+}
+
+.resource-card {
+  /* make cards flexible but with a preferred width */
+  flex: 0 1 300px;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.resource-card:hover {
+  box-shadow: 0 12px 30px rgba(28,61,90,0.1);
+  transform: translateY(-4px);
+  transition: all 0.3s ease;
+}
+
+/* Button styling: keep .btn generic, but more specific here */
+.btn {
+  display: inline-block;
+  background: #0a74da;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn_a { 
+    color: #fff;
+    text-decoration: none;
+ }
+
+@media (max-width: 600px) {
+  .resource-card h3 { font-size: 18px; }
+  .resource-card p { font-size: 14px; }
+  .btn { padding: 10px 14px; font-size: 14px; }
+  .resources {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  .resource-card { max-width: 100%; flex: 1 1 auto; }
+}
