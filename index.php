@@ -52,7 +52,7 @@ if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
             </div>
         </div>
 
-        <footer class="login-footer">
+        <footer class="footer">
             <p>© 2025 Self-Learning Hub | All Rights Reserved</p>
         </footer>
     </div>
