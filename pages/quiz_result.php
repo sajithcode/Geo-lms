@@ -18,22 +18,35 @@ $has_passed = count($columns_passed) > 0;
 $columns_time = $pdo->query("SHOW COLUMNS FROM quiz_attempts LIKE 'time_spent'")->fetchAll();
 $has_time_spent = count($columns_time) > 0;
 
+$columns_correct = $pdo->query("SHOW COLUMNS FROM quiz_attempts LIKE 'correct_answers'")->fetchAll();
+$has_correct_answers = count($columns_correct) > 0;
+
 $columns_show = $pdo->query("SHOW COLUMNS FROM quizzes LIKE 'show_answers_after'")->fetchAll();
 $has_show_answers = count($columns_show) > 0;
 
 $passed_select = $has_passed ? ", qa.passed" : "";
 $time_select = $has_time_spent ? ", qa.time_spent" : "";
+$correct_select = $has_correct_answers ? ", qa.correct_answers" : "";
 $show_select = $has_show_answers ? ", q.show_answers_after" : "";
 
+// Get user_id from session
+$user_id = $_SESSION['id'] ?? $_SESSION['user_id'] ?? null;
+
+if (!$user_id) {
+    $_SESSION['error_message'] = "User session error. Please login again.";
+    header("location: ../auth/index.php");
+    exit;
+}
+
 // Fetch the attempt details
-$sql = "SELECT qa.score, qa.correct_answers{$passed_select}{$time_select}, 
+$sql = "SELECT qa.score{$correct_select}{$passed_select}{$time_select}, 
                q.title AS quiz_title, qa.quiz_id, q.passing_score{$show_select}, qa.created_at
         FROM quiz_attempts qa
         JOIN quizzes q ON qa.quiz_id = q.quiz_id
         WHERE qa.attempt_id = ? AND qa.user_id = ?";
         
 $stmt = $pdo->prepare($sql);
-$stmt->execute([$attempt_id, $_SESSION['user_id']]);
+$stmt->execute([$attempt_id, $user_id]);
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$result) {
@@ -45,6 +58,7 @@ if (!$result) {
 $passing_score = $result['passing_score'] ?? 50;
 $passed = $has_passed ? $result['passed'] : ($result['score'] >= $passing_score);
 $show_answers = $has_show_answers ? ($result['show_answers_after'] ?? 1) : 1;
+$correct_answers = $has_correct_answers ? ($result['correct_answers'] ?? 0) : 0;
 
 // Get total questions
 $stmt_total = $pdo->prepare("SELECT COUNT(*) as total FROM questions WHERE quiz_id = ?");
@@ -217,7 +231,7 @@ include '../includes/header.php';
         <div class="result-stats">
             <div class="stat-card success">
                 <i class="fas fa-check-circle"></i>
-                <span class="stat-value"><?php echo $result['correct_answers'] ?? '-'; ?></span>
+                <span class="stat-value"><?php echo $correct_answers; ?></span>
                 <div class="stat-label">Correct Answers</div>
             </div>
 

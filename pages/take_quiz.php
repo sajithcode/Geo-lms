@@ -27,7 +27,14 @@ if (!$quiz) {
 }
 
 // 3. Check retry limit
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['id'] ?? $_SESSION['user_id'] ?? null;
+
+if (!$user_id) {
+    $_SESSION['error_message'] = "User session error. Please login again.";
+    header("location: ../auth/index.php");
+    exit;
+}
+
 $stmt = $pdo->prepare("SELECT COUNT(*) as attempt_count FROM quiz_attempts WHERE quiz_id = ? AND user_id = ?");
 $stmt->execute([$quiz_id, $user_id]);
 $attempt_data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -427,18 +434,6 @@ setInterval(() => {
     const timeSpent = Math.floor((Date.now() - startTime) / 1000);
     document.getElementById('timeSpentInput').value = timeSpent;
 }, 1000);
-
-// Confirm before leaving page
-window.addEventListener('beforeunload', function (e) {
-    e.preventDefault();
-    e.returnValue = '';
-    return '';
-});
-
-// Don't confirm when submitting the form
-document.getElementById('quizForm').addEventListener('submit', function() {
-    window.removeEventListener('beforeunload', arguments.callee);
-});
 </script>
 <?php else: ?>
 <script>
@@ -448,18 +443,6 @@ setInterval(() => {
     const timeSpent = Math.floor((Date.now() - startTime) / 1000);
     document.getElementById('timeSpentInput').value = timeSpent;
 }, 1000);
-
-// Confirm before leaving page
-window.addEventListener('beforeunload', function (e) {
-    e.preventDefault();
-    e.returnValue = '';
-    return '';
-});
-
-// Don't confirm when submitting the form
-document.getElementById('quizForm').addEventListener('submit', function() {
-    window.removeEventListener('beforeunload', arguments.callee);
-});
 </script>
 <?php endif; ?>
 

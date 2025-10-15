@@ -15,10 +15,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $quiz_id = filter_input(INPUT_POST, 'quiz_id', FILTER_VALIDATE_INT);
     $user_answers = isset($_POST['answers']) ? $_POST['answers'] : [];
     $time_spent = filter_input(INPUT_POST, 'time_spent', FILTER_VALIDATE_INT) ?? 0;
-    $user_id = $_SESSION['user_id'];
+    $user_id = $_SESSION['id'] ?? $_SESSION['user_id'] ?? null;
+    
+    if (!$user_id) {
+        $_SESSION['error_message'] = "User session error. Please login again.";
+        header('Location: ../auth/index.php');
+        exit;
+    }
     
     if (!$quiz_id || empty($user_answers)) {
         // Redirect if data is missing
+        $_SESSION['error_message'] = "Invalid quiz submission data.";
         header('Location: ../pages/quizzes.php');
         exit;
     }
@@ -122,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $passing_score = $quiz_info['passing_score'] ?? 50;
     $passed = $percentage_score >= $passing_score ? 1 : 0;
     
-    // --- Check if passed column exists ---
+    // --- Check which columns exist in quiz_attempts table ---
     $columns_passed = $pdo->query("SHOW COLUMNS FROM quiz_attempts LIKE 'passed'")->fetchAll();
     $has_passed = count($columns_passed) > 0;
     
@@ -132,24 +139,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $columns_started = $pdo->query("SHOW COLUMNS FROM quiz_attempts LIKE 'started_at'")->fetchAll();
     $has_started_at = count($columns_started) > 0;
     
+    $columns_correct = $pdo->query("SHOW COLUMNS FROM quiz_attempts LIKE 'correct_answers'")->fetchAll();
+    $has_correct_answers = count($columns_correct) > 0;
+    
     // --- Save the Attempt to the Database ---
-    $sql_insert = "INSERT INTO quiz_attempts (user_id, quiz_id, score, correct_answers";
-    $params = [$user_id, $quiz_id, $percentage_score, $correct_count];
+    // Build dynamic INSERT query based on existing columns
+    $sql_columns = ['user_id', 'quiz_id', 'score'];
+    $params = [$user_id, $quiz_id, $percentage_score];
+    
+    if ($has_correct_answers) {
+        $sql_columns[] = 'correct_answers';
+        $params[] = $correct_count;
+    }
     
     if ($has_passed) {
-        $sql_insert .= ", passed";
+        $sql_columns[] = 'passed';
         $params[] = $passed;
     }
+    
     if ($has_time_spent) {
-        $sql_insert .= ", time_spent";
+        $sql_columns[] = 'time_spent';
         $params[] = $time_spent;
     }
+    
     if ($has_started_at) {
-        $sql_insert .= ", started_at";
+        $sql_columns[] = 'started_at';
         $params[] = date('Y-m-d H:i:s', time() - $time_spent);
     }
     
-    $sql_insert .= ") VALUES (" . implode(',', array_fill(0, count($params), '?')) . ")";
+    $sql_insert = "INSERT INTO quiz_attempts (" . implode(', ', $sql_columns) . ") VALUES (" . implode(',', array_fill(0, count($params), '?')) . ")";
     
     $stmt_insert = $pdo->prepare($sql_insert);
     $stmt_insert->execute($params);

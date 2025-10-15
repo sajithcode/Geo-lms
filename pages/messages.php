@@ -9,7 +9,14 @@ require_once '../php/csrf.php';
 $tables_check = $pdo->query("SHOW TABLES LIKE 'messages'")->fetchAll();
 $has_messages_table = count($tables_check) > 0;
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['id'] ?? $_SESSION['user_id'] ?? null;
+
+if (!$user_id) {
+    $_SESSION['error_message'] = "User session error. Please login again.";
+    header("location: ../auth/index.php");
+    exit;
+}
+
 $active_tab = $_GET['tab'] ?? 'inbox';
 
 // Handle send message
