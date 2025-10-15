@@ -1,8 +1,17 @@
 <?php
 // php/register_process.php
 
+// Start session
+session_start();
+
+// Include CSRF protection
+require_once 'csrf.php';
+
 // Check if the form was submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
+    // Validate CSRF token
+    csrf_validate_or_redirect('../auth/register.php');
     
     // Include the database connection file
     require_once '../config/database.php';
@@ -17,13 +26,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 1. Check if passwords match
     if ($password !== $confirm_password) {
-        header("location: ../register.php?error=passwordmismatch");
+        header("location: ../auth/register.php?error=passwordmismatch");
         exit;
     }
 
     // 2. Validate email format
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        header("location: ../register.php?error=invalidemail");
+        header("location: ../auth/register.php?error=invalidemail");
         exit;
     }
 
@@ -37,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($stmt_check->rowCount() > 0) {
             // Username or email is already taken
-            header("location: ../register.php?error=usertaken");
+            header("location: ../auth/register.php?error=usertaken");
             exit;
         }
     }
@@ -64,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Attempt to execute the statement
         if ($stmt_insert->execute()) {
             // Redirect to login page with a success message
-            header("location: ../index.php?success=registered");
+            header("location: ../auth/index.php?success=registered");
             exit;
         } else {
             echo "Oops! Something went wrong. Please try again later.";

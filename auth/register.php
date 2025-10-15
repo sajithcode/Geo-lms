@@ -7,10 +7,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="login-page">
-
+<?php
+// Include CSRF protection
+session_start();
+require_once '../php/csrf.php';
+?>
     <div class="login-container">
         <header class="login-header">
             <h1>Join the Self-Learning Hub</h1>
@@ -38,6 +42,9 @@
                     case 'invalidemail':
                         $errorMsg = 'Please enter a valid email address.';
                         break;
+                    case 'csrf_token_invalid':
+                        $errorMsg = 'Security token invalid. Please try again.';
+                        break;
                     default:
                         $errorMsg = 'An unknown error occurred.';
                 }
@@ -45,7 +52,8 @@
             }
             ?>
 
-            <form action="php/register_process.php" method="POST">
+            <form action="../php/register_process.php" method="POST">
+                <?php echo csrf_token_field(); ?>
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required>
