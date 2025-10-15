@@ -1,8 +1,12 @@
 <?php
 $currentPage = 'feedback'; 
 
-
-require_once 'php/session_check.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+// Don't force a login here; feedback should be public-friendly.
+// If you want to require authentication later, re-enable the session_check include.
+// require_once 'php/session_check.php';
 require_once 'config/database.php';
 
 
@@ -29,30 +33,24 @@ include 'includes/header.php';
             <?php
             
             $feedbackSent = false;
+            $feedbackError = '';
+            // Keep the submitted message to re-populate the textarea on error
+            $submittedMessage = '';
+
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-               
-                $message = trim(filter_input(INPUT_POST, 'message', FILTER_SANITIZE_STRING));
-                if (!empty($message)) {
+                $submittedMessage = isset($_POST['message']) ? trim((string)$_POST['message']) : '';
+                if ($submittedMessage === '') {
+                    $feedbackError = 'Please enter a message.';
+                } else {
                     try {
-                        // Ensure feedbacks table exists
-                        $pdo->exec("CREATE TABLE IF NOT EXISTS feedbacks (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            user_id INT NULL,
-                            message TEXT NOT NULL,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
-
-                        // Get user id from session if available
+                        // Use the existing `feedbacks` table. Do not create tables here.
                         $userId = isset($_SESSION['id']) ? $_SESSION['id'] : null;
-
-                        // Insert feedback using prepared statement
                         $stmt = $pdo->prepare('INSERT INTO feedbacks (user_id, message) VALUES (:user_id, :message)');
-                        $stmt->execute([':user_id' => $userId, ':message' => $message]);
-
+                        $stmt->execute([':user_id' => $userId, ':message' => $submittedMessage]);
                         $feedbackSent = true;
                     } catch (PDOException $e) {
-                        // Log error in production; for now set feedbackSent false
                         error_log('Feedback DB error: ' . $e->getMessage());
+                        $feedbackError = 'An error occurred while saving your message. Please try again later.';
                         $feedbackSent = false;
                     }
                 }
@@ -63,13 +61,16 @@ include 'includes/header.php';
                 <?php if ($feedbackSent): ?>
                     <div class="feedback-success">Thank you — your message has been received.</div>
                 <?php else: ?>
-                <form class="feedback-form" method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
-                    <label for="message">Your message</label>
-                    <textarea id="message" name="message" rows="6" placeholder="Enter your comment" required></textarea>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </form>
+                    <?php if (!empty($feedbackError)): ?>
+                        <div class="feedback-error"><?php echo htmlspecialchars($feedbackError, ENT_QUOTES, 'UTF-8'); ?></div>
+                    <?php endif; ?>
+                    <form class="feedback-form" method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <label for="message">Your message</label>
+                        <textarea id="message" name="message" rows="6" placeholder="Enter your comment" required><?php echo isset($submittedMessage) ? htmlspecialchars($submittedMessage, ENT_QUOTES, 'UTF-8') : ''; ?></textarea>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
                 <?php endif; ?>
             </div>
         </div>
