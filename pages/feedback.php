@@ -6,11 +6,12 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 // Don't force a login here; feedback should be public-friendly.
 // If you want to require authentication later, re-enable the session_check include.
-// require_once 'php/session_check.php';
-require_once 'config/database.php';
+// require_once '../php/session_check.php';
+require_once '../config/database.php';
+require_once '../php/csrf.php';
 
 
-include 'includes/header.php';
+include '../includes/header.php';
 ?>
 <script>document.title = 'Feedback - Self-Learning Hub';</script>
 
@@ -18,10 +19,10 @@ include 'includes/header.php';
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="assets/css/feedback.css">
+<link rel="stylesheet" href="../assets/css/feedback.css">
 
 <div class="dashboard-container">
-    <?php include 'includes/sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <main class="main-content">
         <header class="main-header">
@@ -38,10 +39,14 @@ include 'includes/header.php';
             $submittedMessage = '';
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $submittedMessage = isset($_POST['message']) ? trim((string)$_POST['message']) : '';
-                if ($submittedMessage === '') {
-                    $feedbackError = 'Please enter a message.';
+                // Validate CSRF token
+                if (!csrf_validate_token($_POST['csrf_token'] ?? '')) {
+                    $feedbackError = 'Security token validation failed. Please try again.';
                 } else {
+                    $submittedMessage = isset($_POST['message']) ? trim((string)$_POST['message']) : '';
+                    if ($submittedMessage === '') {
+                        $feedbackError = 'Please enter a message.';
+                    } else {
                     try {
                         // Use the existing `feedbacks` table. Do not create tables here.
                         $userId = isset($_SESSION['id']) ? $_SESSION['id'] : null;
@@ -54,6 +59,7 @@ include 'includes/header.php';
                         $feedbackSent = false;
                     }
                 }
+                }
             }
             ?>
 
@@ -65,6 +71,7 @@ include 'includes/header.php';
                         <div class="feedback-error"><?php echo htmlspecialchars($feedbackError, ENT_QUOTES, 'UTF-8'); ?></div>
                     <?php endif; ?>
                     <form class="feedback-form" method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <?php echo csrf_token_field(); ?>
                         <label for="message">Your message</label>
                         <textarea id="message" name="message" rows="6" placeholder="Enter your comment" required><?php echo isset($submittedMessage) ? htmlspecialchars($submittedMessage, ENT_QUOTES, 'UTF-8') : ''; ?></textarea>
                         <div class="form-actions">

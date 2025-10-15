@@ -4,18 +4,18 @@ $currentPage = 'resources';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once 'config/database.php';
+require_once '../config/database.php';
 
-include 'includes/header.php';
+include '../includes/header.php';
 ?>
 <script>document.title = 'Past Papers - Self-Learning Hub';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/pastpapers.css">
+<link rel="stylesheet" href="../assets/css/pastpapers.css">
 
 <div class="dashboard-container">
-    <?php include 'includes/sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <main class="main-content">
         <header class="main-header">
@@ -57,7 +57,7 @@ include 'includes/header.php';
     </main>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include '../includes/footer.php'; ?>
 <?php
 $currentPage = 'resources';
 
@@ -65,19 +65,19 @@ $currentPage = 'resources';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once 'config/database.php';
+require_once '../config/database.php';
 
-include 'includes/header.php';
+include '../includes/header.php';
 ?>
 <script>document.title = 'Past Papers - Self-Learning Hub';</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/pastpapers.css">
+<link rel="stylesheet" href="../assets/css/pastpapers.css">
 
 <div class="dashboard-container">
-    <?php include 'includes/sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <main class="main-content">
         <header class="main-header">
@@ -119,4 +119,4 @@ include 'includes/header.php';
     </main>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include '../includes/footer.php'; ?>
