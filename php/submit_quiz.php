@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $quiz_id = filter_input(INPUT_POST, 'quiz_id', FILTER_VALIDATE_INT);
     $user_answers = isset($_POST['answers']) ? $_POST['answers'] : [];
     $time_spent = filter_input(INPUT_POST, 'time_spent', FILTER_VALIDATE_INT) ?? 0;
-    $user_id = $_SESSION['user_id'];
+    $user_id = $_SESSION['id'];
     
     if (!$quiz_id || empty($user_answers)) {
         // Redirect if data is missing

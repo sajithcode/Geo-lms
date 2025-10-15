@@ -27,7 +27,7 @@ if (!$quiz) {
 }
 
 // 3. Check retry limit
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['id'];
 $stmt = $pdo->prepare("SELECT COUNT(*) as attempt_count FROM quiz_attempts WHERE quiz_id = ? AND user_id = ?");
 $stmt->execute([$quiz_id, $user_id]);
 $attempt_data = $stmt->fetch(PDO::FETCH_ASSOC);

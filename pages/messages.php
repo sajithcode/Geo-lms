@@ -9,7 +9,7 @@ require_once '../php/csrf.php';
 $tables_check = $pdo->query("SHOW TABLES LIKE 'messages'")->fetchAll();
 $has_messages_table = count($tables_check) > 0;
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['id'];
 $active_tab = $_GET['tab'] ?? 'inbox';
 
 // Handle send message
