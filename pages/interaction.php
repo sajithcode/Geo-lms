@@ -56,7 +56,7 @@ if ($tables_check['messages']) {
 }
 
 // Get announcement statistics
-$announcement_stats = ['total' => 0, 'unread' => 0];
+$announcement_stats = ['total' => 0];
 if ($tables_check['announcements']) {
     try {
         // Total published announcements
@@ -64,9 +64,6 @@ if ($tables_check['announcements']) {
                                WHERE status = 'published'");
         $stmt->execute();
         $announcement_stats['total'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
-        
-        // For unread, we'll just show total for now (can enhance with read tracking later)
-        $announcement_stats['unread'] = $announcement_stats['total'];
     } catch (PDOException $e) {
         // Error fetching stats
     }
@@ -576,9 +573,6 @@ include '../includes/header.php';
                         <h3><?php echo $message_stats['inbox']; ?></h3>
                         <p>Messages</p>
                     </div>
-                    <?php if ($message_stats['unread'] > 0): ?>
-                        <span class="stat-badge"><?php echo $message_stats['unread']; ?> new</span>
-                    <?php endif; ?>
                 </a>
 
                 <a href="announcements.php" class="stat-card">
@@ -589,9 +583,6 @@ include '../includes/header.php';
                         <h3><?php echo $announcement_stats['total']; ?></h3>
                         <p>Announcements</p>
                     </div>
-                    <?php if ($announcement_stats['unread'] > 0): ?>
-                        <span class="stat-badge"><?php echo $announcement_stats['unread']; ?> new</span>
-                    <?php endif; ?>
                 </a>
 
                 <div class="stat-card">
@@ -612,9 +603,6 @@ include '../includes/header.php';
                         <h3><?php echo $notification_stats['total']; ?></h3>
                         <p>Notifications</p>
                     </div>
-                    <?php if ($notification_stats['unread'] > 0): ?>
-                        <span class="stat-badge"><?php echo $notification_stats['unread']; ?> new</span>
-                    <?php endif; ?>
                 </div>
             </div>
 
@@ -679,9 +667,6 @@ include '../includes/header.php';
                                     <div class="item-header">
                                         <h3 class="item-title"><?php echo htmlspecialchars($msg['subject'] ?: 'No Subject'); ?></h3>
                                         <div class="item-meta">
-                                            <?php if (!$msg['is_read']): ?>
-                                                <span class="item-badge badge-unread">NEW</span>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     <div class="item-meta">
@@ -771,9 +756,6 @@ include '../includes/header.php';
                                             <h3 class="item-title"><?php echo htmlspecialchars($notif['title']); ?></h3>
                                         </div>
                                         <div class="item-meta">
-                                            <?php if (!$notif['is_read']): ?>
-                                                <span class="item-badge badge-unread">NEW</span>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     <div class="item-meta" style="margin-left: 52px;">

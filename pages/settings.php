@@ -54,6 +54,15 @@ if (!$settings) {
 }
 
 // Handle form submissions
+$success_message = '';
+$error_message = '';
+
+// Check for success message from redirect
+if (isset($_SESSION['settings_success'])) {
+    $success_message = $_SESSION['settings_success'];
+    unset($_SESSION['settings_success']);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Validate CSRF token for all form submissions
@@ -76,12 +85,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare("UPDATE users SET full_name = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?");
                 $stmt->execute([$full_name, $user_id]);
             }
-            $success_message = "Profile updated successfully!";
             
-            // Refresh user data
-            $stmt = $pdo->prepare($select_sql);
-            $stmt->execute([$user_id]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Redirect to prevent form resubmission on refresh
+            $_SESSION['settings_success'] = "Profile updated successfully!";
+            header("Location: settings.php");
+            exit;
         } catch (PDOException $e) {
             $error_message = "Error updating profile: " . $e->getMessage();
         }
@@ -109,7 +117,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare("UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?");
                 $stmt->execute([$new_password_hash, $user_id]);
-                $success_message = "Password changed successfully!";
+                
+                // Redirect to prevent form resubmission on refresh
+                $_SESSION['settings_success'] = "Password changed successfully!";
+                header("Location: settings.php");
+                exit;
             } else {
                 $error_message = "Current password is incorrect!";
             }
@@ -126,12 +138,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $pdo->prepare("UPDATE user_settings SET theme = ?, notifications_enabled = ?, email_notifications = ?, show_profile_publicly = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?");
             $stmt->execute([$theme, $notifications_enabled, $email_notifications, $show_profile_publicly, $user_id]);
-            $success_message = "Settings updated successfully!";
             
-            // Refresh settings data
-            $stmt = $pdo->prepare("SELECT * FROM user_settings WHERE user_id = ?");
-            $stmt->execute([$user_id]);
-            $settings = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Redirect to prevent form resubmission on refresh
+            $_SESSION['settings_success'] = "Settings updated successfully!";
+            header("Location: settings.php");
+            exit;
         } catch (PDOException $e) {
             $error_message = "Error updating settings: " . $e->getMessage();
         }

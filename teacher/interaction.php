@@ -545,12 +545,9 @@ if ($tables_check['notifications']) {
                         <h3><?php echo $message_stats['inbox']; ?></h3>
                         <p>Messages</p>
                     </div>
-                    <?php if ($message_stats['unread'] > 0): ?>
-                        <span class="stat-badge"><?php echo $message_stats['unread']; ?> new</span>
-                    <?php endif; ?>
                 </a>
 
-                <a href="../pages/announcements.php" class="stat-card">
+                <a href="announcements.php" class="stat-card">
                     <div class="stat-icon orange">
                         <i class="fas fa-bullhorn"></i>
                     </div>
@@ -578,9 +575,6 @@ if ($tables_check['notifications']) {
                         <h3><?php echo $notification_stats['total']; ?></h3>
                         <p>Notifications</p>
                     </div>
-                    <?php if ($notification_stats['unread'] > 0): ?>
-                        <span class="stat-badge"><?php echo $notification_stats['unread']; ?> new</span>
-                    <?php endif; ?>
                 </div>
             </div>
 
@@ -612,7 +606,7 @@ if ($tables_check['notifications']) {
                         </div>
                     </a>
 
-                    <a href="../pages/feedback.php" class="btn-action">
+                    <a href="feedback.php" class="btn-action">
                         <i class="fas fa-comment-dots"></i>
                         <div class="btn-action-content">
                             <h3>Student Feedback</h3>
@@ -643,9 +637,6 @@ if ($tables_check['notifications']) {
                                     <div class="item-header">
                                         <h3 class="item-title"><?php echo htmlspecialchars($msg['subject'] ?: 'No Subject'); ?></h3>
                                         <div class="item-meta">
-                                            <?php if (!$msg['is_read']): ?>
-                                                <span class="item-badge badge-unread">NEW</span>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     <div class="item-meta">
@@ -664,7 +655,7 @@ if ($tables_check['notifications']) {
                 <div class="comm-section">
                     <div class="section-header">
                         <h2><i class="fas fa-bullhorn"></i> Recent Announcements</h2>
-                        <a href="../pages/announcements.php" class="btn-view-all">View All</a>
+                        <a href="announcements.php" class="btn-view-all">View All</a>
                     </div>
                     <div class="section-content">
                         <?php if (empty($recent_announcements)): ?>
@@ -675,7 +666,7 @@ if ($tables_check['notifications']) {
                             </div>
                         <?php else: ?>
                             <?php foreach ($recent_announcements as $announcement): ?>
-                                <div class="item-card" onclick="window.location.href='../pages/announcements.php'">
+                                <div class="item-card" onclick="window.location.href='announcements.php'">
                                     <div class="item-header">
                                         <h3 class="item-title"><?php echo htmlspecialchars($announcement['title']); ?></h3>
                                     </div>
@@ -735,9 +726,6 @@ if ($tables_check['notifications']) {
                                             <h3 class="item-title"><?php echo htmlspecialchars($notif['title']); ?></h3>
                                         </div>
                                         <div class="item-meta">
-                                            <?php if (!$notif['is_read']): ?>
-                                                <span class="item-badge badge-unread">NEW</span>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     <div class="item-meta" style="margin-left: 52px;">

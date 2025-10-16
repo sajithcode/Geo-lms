@@ -360,13 +360,13 @@ try {
             <p>Broadcast a message to students</p>
         </div>
         
-        <div class="action-card" onclick="location.href='../pages/announcements.php'">
+        <div class="action-card" onclick="location.href='announcements.php'">
             <i class="fa-solid fa-list"></i>
             <h3>View All Announcements</h3>
-            <p>See all announcements and updates</p>
+            <p>See all announcements and updates</p>Perfect! The file exists but is empty. Let me check the student feedback page to understand the structure, and then create a proper teacher feedback view:
         </div>
         
-        <div class="action-card" onclick="location.href='../pages/feedback.php'">
+        <div class="action-card" onclick="location.href='feedback.php'">
             <i class="fa-solid fa-comment-dots"></i>
             <h3>Student Feedback</h3>
             <p>Review feedback from students</p>

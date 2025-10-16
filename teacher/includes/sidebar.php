@@ -27,6 +27,9 @@
             <li class="<?php echo ($currentPage == 'teacher_interaction') ? 'active' : '' ?>">
                 <a href="interaction.php"><i class="fa-solid fa-comments"></i> Interaction</a>
             </li>
+            <li class="<?php echo ($currentPage == 'teacher_feedback') ? 'active' : '' ?>">
+                <a href="feedback.php"><i class="fa-solid fa-comment-dots"></i> Student Feedback</a>
+            </li>
             <li class="<?php echo ($currentPage == 'teacher_settings') ? 'active' : '' ?>">
                 <a href="settings.php"><i class="fa-solid fa-cog"></i> Settings</a>
             </li>

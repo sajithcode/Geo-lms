@@ -20,10 +20,14 @@ if (isset($_SESSION["role"])) {
         exit;
     }
     
-    // If user is teacher, redirect to teacher dashboard
+    // If user is teacher, redirect to teacher dashboard (except for announcements and messages pages)
     if ($role === 'teacher') {
-        header("location: ../teacher/dashboard.php");
-        exit;
+        // Allow teachers to view announcements and use messaging
+        $current_page = basename($_SERVER['PHP_SELF']);
+        if ($current_page !== 'announcements.php' && $current_page !== 'messages.php') {
+            header("location: ../teacher/dashboard.php");
+            exit;
+        }
     }
     
     // Students continue normally to student pages

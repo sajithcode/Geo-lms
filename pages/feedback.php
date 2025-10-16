@@ -38,6 +38,12 @@ include '../includes/header.php';
             // Keep the submitted message to re-populate the textarea on error
             $submittedMessage = '';
 
+            // Check for success message from redirect
+            if (isset($_SESSION['feedback_sent']) && $_SESSION['feedback_sent']) {
+                $feedbackSent = true;
+                unset($_SESSION['feedback_sent']);
+            }
+
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Validate CSRF token
                 if (!csrf_validate_token($_POST['csrf_token'] ?? '')) {
@@ -52,7 +58,11 @@ include '../includes/header.php';
                         $userId = isset($_SESSION['id']) ? $_SESSION['id'] : null;
                         $stmt = $pdo->prepare('INSERT INTO feedbacks (user_id, message) VALUES (:user_id, :message)');
                         $stmt->execute([':user_id' => $userId, ':message' => $submittedMessage]);
-                        $feedbackSent = true;
+                        
+                        // Redirect to prevent form resubmission on refresh
+                        $_SESSION['feedback_sent'] = true;
+                        header("Location: feedback.php");
+                        exit;
                     } catch (PDOException $e) {
                         error_log('Feedback DB error: ' . $e->getMessage());
                         $feedbackError = 'An error occurred while saving your message. Please try again later.';
