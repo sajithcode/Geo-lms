@@ -8,66 +8,58 @@ require_once '../config/database.php';
 $tables_check = $pdo->query("SHOW TABLES LIKE 'ebooks'")->fetchAll();
 $has_ebooks_table = count($tables_check) > 0;
 
-// Get search and filter parameters
-$search_query = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING);
-$selected_category = filter_input(INPUT_GET, 'category', FILTER_VALIDATE_INT);
-$sort_by = filter_input(INPUT_GET, 'sort', FILTER_SANITIZE_STRING) ?? 'recent';
+// Get filter parameters
+$search = $_GET['search'] ?? '';
+$category_filter = $_GET['category'] ?? '';
+$sort = $_GET['sort'] ?? 'recent';
 
-// Initialize variables
+// Get predefined categories
+$categories = [
+    'Mathematics',
+    'Physics', 
+    'Chemistry',
+    'Computer Science',
+    'Engineering',
+    'General',
+    'Biology',
+    'Economics',
+    'Geography',
+    'History'
+];
+
+// Fetch ebooks from database
 $ebooks = [];
-$categories = [];
-
 if ($has_ebooks_table) {
-    // Fetch categories
     try {
-        $cat_check = $pdo->query("SHOW TABLES LIKE 'resource_categories'")->fetchAll();
-        if (count($cat_check) > 0) {
-            $stmt = $pdo->query("SELECT * FROM resource_categories ORDER BY category_name");
-            $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $where_clauses = [];
+        $params = [];
+        
+        if (!empty($search)) {
+            $where_clauses[] = "(e.title LIKE ? OR e.description LIKE ? OR e.author LIKE ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
         }
-    } catch (PDOException $e) {
-        $categories = [];
-    }
-
-    // Build WHERE clause
-    $where_clauses = [];
-    $params = [];
-
-    if ($search_query) {
-        $where_clauses[] = "(e.title LIKE ? OR e.description LIKE ? OR e.author LIKE ?)";
-        $search_term = "%{$search_query}%";
-        $params[] = $search_term;
-        $params[] = $search_term;
-        $params[] = $search_term;
-    }
-
-    if ($selected_category) {
-        $where_clauses[] = "e.category_id = ?";
-        $params[] = $selected_category;
-    }
-
-    $where_sql = !empty($where_clauses) ? "WHERE " . implode(" AND ", $where_clauses) : "";
-
-    // Build ORDER BY clause
-    $order_by = match($sort_by) {
-        'popular' => 'e.download_count DESC',
-        'title' => 'e.title ASC',
-        'author' => 'e.author ASC',
-        default => 'e.created_at DESC'
-    };
-
-    // Fetch ebooks with ratings
-    try {
-        $sql = "SELECT e.*, 
-                rc.category_name,
-                u.username as uploader_name,
-                (SELECT AVG(rating) FROM resource_ratings WHERE resource_type = 'ebook' AND resource_id = e.ebook_id) as avg_rating,
-                (SELECT COUNT(*) FROM resource_ratings WHERE resource_type = 'ebook' AND resource_id = e.ebook_id) as rating_count
-                FROM ebooks e
-                LEFT JOIN resource_categories rc ON e.category_id = rc.category_id
-                LEFT JOIN users u ON e.uploaded_by = u.user_id
-                {$where_sql}
-                ORDER BY {$order_by}";
+        
+        if (!empty($category_filter)) {
+            $where_clauses[] = "e.category = ?";
+            $params[] = $category_filter;
+        }
+        
+        $where_sql = !empty($where_clauses) ? "WHERE " . implode(" AND ", $where_clauses) : "";
+        
+        $order_sql = "ORDER BY e.created_at DESC";
+        if ($sort === 'popular') {
+            $order_sql = "ORDER BY e.downloads DESC";
+        } elseif ($sort === 'title') {
+            $order_sql = "ORDER BY e.title ASC";
+        }
+        
+        $sql = "SELECT e.*, u.username
+                FROM ebooks e 
+                LEFT JOIN users u ON e.uploaded_by = u.user_id 
+                $where_sql
+                $order_sql";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
@@ -80,6 +72,10 @@ if ($has_ebooks_table) {
 include '../includes/header.php';
 ?>
 <script>document.title = 'E-Books - Self-Learning Hub';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/notes.css">
 
 <style>
 .search-filter-bar {
@@ -90,66 +86,75 @@ include '../includes/header.php';
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.filter-row {
-    display: flex;
+.search-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
     gap: 15px;
-    align-items: center;
-    flex-wrap: wrap;
+    align-items: end;
 }
 
-.search-box {
-    flex: 1;
-    min-width: 250px;
+.search-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
-.search-box input {
-    width: 100%;
-    padding: 12px 15px;
-    padding-left: 40px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 1em;
-}
-
-.search-box {
-    position: relative;
-}
-
-.search-box i {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #a0aec0;
-}
-
-.filter-select {
-    padding: 12px 15px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 1em;
-    min-width: 180px;
-}
-
-.btn-clear {
-    padding: 12px 24px;
-    background: #f7fafc;
+.search-group label {
+    font-weight: 600;
     color: #4a5568;
+    font-size: 0.9em;
+}
+
+.search-group input,
+.search-group select {
+    padding: 10px 15px;
     border: 2px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+.search-group input:focus,
+.search-group select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-search {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
     font-weight: 600;
     cursor: pointer;
-    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.btn-clear:hover {
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-reset {
+    padding: 10px 20px;
     background: #e2e8f0;
+    color: #2d3748;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
-.resources-grid {
+.btn-reset:hover {
+    background: #cbd5e0;
+}
+
+.resource-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
+    gap: 20px;
 }
 
 .resource-card {
@@ -157,102 +162,87 @@ include '../includes/header.php';
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .resource-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
 .resource-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
 }
 
 .resource-title {
     font-size: 1.1em;
     font-weight: 600;
     color: #2d3748;
-    margin: 0 0 8px 0;
-    line-height: 1.4;
+    margin-bottom: 10px;
 }
 
-.category-badge {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.75em;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.author-info {
+.resource-card .author-info {
     color: #718096;
     font-size: 0.9em;
-    margin-bottom: 12px;
-    font-style: italic;
-}
-
-.resource-description {
-    color: #4a5568;
-    font-size: 0.95em;
-    line-height: 1.5;
-    margin-bottom: 15px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    flex-grow: 1;
+    margin-top: 5px;
 }
 
 .resource-meta {
     display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
     flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
-.meta-item {
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.badge-category {
+    background: #e6f2ff;
+    color: #0066cc;
+}
+
+.badge-size {
+    background: #f0f4f8;
+    color: #4a5568;
+}
+
+.resource-description {
+    color: #718096;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.resource-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    color: #718096;
+}
+
+.resource-stats span {
     display: flex;
     align-items: center;
     gap: 5px;
-    color: #718096;
-    font-size: 0.85em;
 }
 
-.meta-item i {
-    color: #a0aec0;
-}
-
-.rating-display {
+.resource-actions {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 15px;
+    gap: 10px;
 }
 
-.stars {
-    display: flex;
-    gap: 2px;
-}
-
-.stars i {
-    color: #fbbf24;
-    font-size: 0.9em;
-}
-
-.rating-count {
-    color: #718096;
-    font-size: 0.85em;
-}
-
-.download-btn {
+.btn-download {
+    flex: 1;
     padding: 10px 20px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -261,14 +251,14 @@ include '../includes/header.php';
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
+    text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: all 0.3s ease;
 }
 
-.download-btn:hover {
+.btn-download:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
@@ -278,7 +268,6 @@ include '../includes/header.php';
     padding: 60px 20px;
     background: white;
     border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .empty-state i {
@@ -309,12 +298,6 @@ include '../includes/header.php';
     color: #ed8936;
     margin-bottom: 15px;
 }
-
-@media (max-width: 768px) {
-    .resources-grid {
-        grid-template-columns: 1fr;
-    }
-}
 </style>
 
 <div class="dashboard-container">
@@ -322,119 +305,122 @@ include '../includes/header.php';
 
     <main class="main-content">
         <header class="main-header">
-            <h1><i class="fas fa-book"></i> E-Books</h1>
-            <p>Comprehensive textbooks and reference materials for your studies</p>
+            <h1><i class="fas fa-book"></i> Browse E-Books</h1>
+            <p>Digital textbooks and reference books available for download</p>
         </header>
 
         <?php if (!$has_ebooks_table): ?>
         <div class="warning-box">
             <i class="fas fa-exclamation-triangle"></i>
-            <h3>E-books Table Not Found</h3>
+            <h3>E-Books Table Not Found</h3>
             <p>Please run the database migration to create the ebooks table.</p>
-            <p style="margin-top: 15px;"><a href="../docs/run_migration.php" class="download-btn" style="display: inline-flex;">Run Migration</a></p>
         </div>
         <?php else: ?>
 
         <!-- Search and Filter Bar -->
-        <div class="search-filter-bar">
-            <form method="GET" class="filter-row">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" name="search" placeholder="Search e-books by title, author, or description..." value="<?php echo htmlspecialchars($search_query ?? ''); ?>">
+        <form method="GET" class="search-filter-bar">
+            <div class="search-row">
+                <div class="search-group">
+                    <label for="search"><i class="fas fa-search"></i> Search</label>
+                    <input type="text" name="search" id="search" placeholder="Search e-books..." value="<?php echo htmlspecialchars($search); ?>">
                 </div>
                 
-                <select name="category" class="filter-select">
-                    <option value="">All Categories</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo $cat['category_id']; ?>" <?php echo ($selected_category == $cat['category_id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($cat['category_name']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <?php if (!empty($categories)): ?>
+                <div class="search-group">
+                    <label for="category"><i class="fas fa-filter"></i> Category</label>
+                    <select name="category" id="category">
+                        <option value="">All Categories</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo htmlspecialchars($cat); ?>" <?php echo $category_filter == $cat ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($cat); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <?php endif; ?>
                 
-                <select name="sort" class="filter-select">
-                    <option value="recent" <?php echo ($sort_by === 'recent') ? 'selected' : ''; ?>>Most Recent</option>
-                    <option value="popular" <?php echo ($sort_by === 'popular') ? 'selected' : ''; ?>>Most Popular</option>
-                    <option value="title" <?php echo ($sort_by === 'title') ? 'selected' : ''; ?>>Title (A-Z)</option>
-                    <option value="author" <?php echo ($sort_by === 'author') ? 'selected' : ''; ?>>Author (A-Z)</option>
-                </select>
+                <div class="search-group">
+                    <label for="sort"><i class="fas fa-sort"></i> Sort By</label>
+                    <select name="sort" id="sort">
+                        <option value="recent" <?php echo $sort === 'recent' ? 'selected' : ''; ?>>Most Recent</option>
+                        <option value="popular" <?php echo $sort === 'popular' ? 'selected' : ''; ?>>Most Popular</option>
+                        <option value="title" <?php echo $sort === 'title' ? 'selected' : ''; ?>>Title (A-Z)</option>
+                    </select>
+                </div>
                 
-                <button type="submit" class="download-btn">
-                    <i class="fas fa-filter"></i> Filter
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i> Search
                 </button>
                 
-                <?php if ($search_query || $selected_category || $sort_by !== 'recent'): ?>
-                <a href="e-books.php" class="btn-clear">
+                <?php if ($search || $category_filter || $sort !== 'recent'): ?>
+                <button type="button" class="btn-reset" onclick="window.location.href='e-books.php'">
                     <i class="fas fa-times"></i> Clear
-                </a>
+                </button>
                 <?php endif; ?>
-            </form>
-        </div>
+            </div>
+        </form>
 
-        <!-- E-books Grid -->
+        <!-- E-Books Grid -->
         <?php if (empty($ebooks)): ?>
-            <div class="empty-state">
-                <i class="fas fa-book-open"></i>
-                <h3>No E-books Found</h3>
-                <p><?php echo $search_query ? 'Try different search terms or filters.' : 'No e-books have been uploaded yet.'; ?></p>
-                <?php if (!$search_query): ?>
-                <p style="margin-top: 15px;"><a href="../docs/add_dummy_resources.php" class="download-btn" style="display: inline-flex;">Add Dummy E-books</a></p>
+        <div class="empty-state">
+            <i class="fas fa-book"></i>
+            <h3>No E-Books Found</h3>
+            <p>
+                <?php if ($search || $category_filter): ?>
+                    No e-books match your search criteria. Try adjusting your filters.
+                <?php else: ?>
+                    No e-books are available yet. Check back later!
                 <?php endif; ?>
-            </div>
+            </p>
+        </div>
         <?php else: ?>
-            <div class="resources-grid">
-                <?php foreach ($ebooks as $ebook): ?>
-                    <div class="resource-card">
-                        <div class="resource-header">
-                            <h3 class="resource-title"><?php echo htmlspecialchars($ebook['title']); ?></h3>
-                            <?php if ($ebook['category_name']): ?>
-                                <span class="category-badge"><?php echo htmlspecialchars($ebook['category_name']); ?></span>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <?php if ($ebook['author']): ?>
-                            <div class="author-info">
-                                <i class="fas fa-user"></i> by <?php echo htmlspecialchars($ebook['author']); ?>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <p class="resource-description"><?php echo htmlspecialchars($ebook['description']); ?></p>
-                        
-                        <div class="resource-meta">
-                            <span class="meta-item">
-                                <i class="fas fa-file-pdf"></i>
-                                <?php echo number_format($ebook['file_size'] / 1048576, 1); ?> MB
-                            </span>
-                            <span class="meta-item">
-                                <i class="fas fa-download"></i>
-                                <?php echo $ebook['download_count']; ?> downloads
-                            </span>
-                            <span class="meta-item">
-                                <i class="fas fa-eye"></i>
-                                <?php echo $ebook['view_count']; ?> views
-                            </span>
-                        </div>
-                        
-                        <?php if ($ebook['avg_rating']): ?>
-                            <div class="rating-display">
-                                <div class="stars">
-                                    <?php 
-                                    $rating = round($ebook['avg_rating']);
-                                    for ($i = 1; $i <= 5; $i++): ?>
-                                        <i class="fas fa-star" style="color: <?php echo $i <= $rating ? '#fbbf24' : '#e2e8f0'; ?>;"></i>
-                                    <?php endfor; ?>
-                                </div>
-                                <span class="rating-count">(<?php echo $ebook['rating_count']; ?> <?php echo $ebook['rating_count'] == 1 ? 'rating' : 'ratings'; ?>)</span>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <a href="../php/download_resource.php?type=ebook&id=<?php echo $ebook['ebook_id']; ?>" class="download-btn">
-                            <i class="fas fa-download"></i>
-                            Download E-book
-                        </a>
+        <div class="resource-grid">
+            <?php foreach ($ebooks as $ebook): ?>
+            <div class="resource-card">
+                <div class="resource-header">
+                    <div class="resource-title"><?php echo htmlspecialchars($ebook['title']); ?></div>
+                    <?php if (!empty($ebook['author'])): ?>
+                    <div class="author-info">
+                        <i class="fas fa-user-edit"></i> by <?php echo htmlspecialchars($ebook['author']); ?>
                     </div>
-                <?php endforeach; ?>
+                    <?php endif; ?>
+                    
+                    <div class="resource-meta">
+                        <?php if (!empty($ebook['category'])): ?>
+                            <span class="badge badge-category">
+                                <i class="fas fa-tag"></i> <?php echo htmlspecialchars($ebook['category']); ?>
+                            </span>
+                        <?php endif; ?>
+                        
+                        <span class="badge badge-size">
+                            <i class="fas fa-file"></i> <?php echo number_format($ebook['filesize'] / 1024 / 1024, 2); ?> MB
+                        </span>
+                    </div>
+                </div>
+                
+                <?php if ($ebook['description']): ?>
+                <div class="resource-description">
+                    <?php echo htmlspecialchars($ebook['description']); ?>
+                </div>
+                <?php endif; ?>
+                
+                <div class="resource-stats">
+                    <span>
+                        <i class="fas fa-download"></i> <?php echo $ebook['downloads']; ?> downloads
+                    </span>
+                    <span>
+                        <i class="fas fa-calendar"></i> <?php echo date('M j, Y', strtotime($ebook['created_at'])); ?>
+                    </span>
+                </div>
+                
+                <div class="resource-actions">
+                    <a href="../php/download_resource.php?type=ebook&id=<?php echo $ebook['id']; ?>" class="btn-download">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
             </div>
+            <?php endforeach; ?>
+        </div>
         <?php endif; ?>
 
         <?php endif; ?>
