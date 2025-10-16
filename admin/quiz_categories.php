@@ -88,22 +88,49 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <style>
         :root {
-            --admin-primary: #667eea;
-            --admin-secondary: #764ba2;
+            --admin-primary: #0a74da;
+            --admin-secondary: #1c3d5a;
+            --admin-success: #10b981;
+            --admin-warning: #f59e0b;
+            --admin-danger: #ef4444;
         }
         
-        .admin-header {
-            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f7fc;
+        }
+        
+        .sidebar {
+            background: #1c3d5a;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, #0a74da 0%, #1c3d5a 100%);
             color: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(10, 116, 218, 0.3);
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px 0;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header p {
+            margin: 0;
+            opacity: 0.95;
         }
         
         .content-grid {
             display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 24px;
+            grid-template-columns: 450px 1fr;
+            gap: 30px;
         }
         
         @media (max-width: 1024px) {
@@ -114,9 +141,18 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         .form-card, .list-card {
             background: white;
-            padding: 24px;
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .form-card h2, .list-card h2 {
+            margin: 0 0 20px 0;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3em;
         }
         
         .form-group {
@@ -161,8 +197,11 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .btn-primary {
             background: var(--admin-primary);
             color: white;
-            width: 100%;
-            justify-content: center;
+        }
+        
+        .btn-primary:hover {
+            background: var(--admin-secondary);
+            transform: translateY(-2px);
         }
         
         .btn-secondary {
@@ -170,9 +209,17 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: white;
         }
         
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
         .btn-danger {
-            background: #ef4444;
+            background: var(--admin-danger);
             color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
         }
         
         .btn-sm {
@@ -181,10 +228,10 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         .category-item {
-            padding: 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            margin-bottom: 12px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -193,7 +240,9 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         .category-item:hover {
             border-color: var(--admin-primary);
-            background: #f9fafb;
+            background: #f7fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(10, 116, 218, 0.1);
         }
         
         .category-info {
@@ -202,26 +251,31 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         .category-name {
             font-weight: 600;
-            color: #111827;
-            margin-bottom: 4px;
+            color: #2d3748;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            font-size: 1.1em;
         }
         
         .category-desc {
-            font-size: 0.875rem;
-            color: #6b7280;
+            font-size: 0.9rem;
+            color: #718096;
+            line-height: 1.4;
         }
         
         .category-count {
-            background: #dbeafe;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             color: #1e40af;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.875rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-right: 12px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .category-actions {
@@ -255,41 +309,72 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: #6b7280;
             margin-top: 4px;
         }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #cbd5e0;
+        }
+        
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .category-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .category-count {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="admin-dashboard">
-    <div class="admin-header">
-        <h1>
-            <i class="fa-solid fa-tags"></i>
-            Quiz Categories
-        </h1>
-        <p>Organize quizzes by categories</p>
-    </div>
+<div class="dashboard-container">
+    <?php include 'includes/sidebar.php'; ?>
 
-    <?php if (isset($_SESSION['success_message'])): ?>
-        <div class="alert alert-success">
-            <i class="fas fa-check-circle"></i>
-            <?php echo htmlspecialchars($_SESSION['success_message']); unset($_SESSION['success_message']); ?>
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>
+                <i class="fa-solid fa-tags"></i>
+                Quiz Categories
+            </h1>
+            <p>Organize and manage quiz categories for better content organization</p>
         </div>
-    <?php endif; ?>
 
-    <?php if (isset($_SESSION['error_message'])): ?>
-        <div class="alert alert-error">
-            <i class="fas fa-exclamation-circle"></i>
-            <?php echo htmlspecialchars($_SESSION['error_message']); unset($_SESSION['error_message']); ?>
+        <!-- Messages -->
+        <?php if (isset($_SESSION['success_message'])): ?>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <?php echo htmlspecialchars($_SESSION['success_message']); unset($_SESSION['success_message']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error_message'])): ?>
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <?php echo htmlspecialchars($_SESSION['error_message']); unset($_SESSION['error_message']); ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Action Bar -->
+        <div style="margin-bottom: 30px;">
+            <a href="quizzes.php" class="btn btn-secondary">
+                <i class="fa-solid fa-puzzle-piece"></i> Manage Quizzes
+            </a>
         </div>
-    <?php endif; ?>
-
-    <div style="margin-bottom: 20px;">
-        <a href="dashboard.php" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-        </a>
-        <a href="quizzes.php" class="btn btn-secondary" style="margin-left: 10px;">
-            <i class="fa-solid fa-puzzle-piece"></i> Manage Quizzes
-        </a>
-    </div>
 
     <div class="content-grid">
         <!-- Add/Edit Form -->
@@ -331,7 +416,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </button>
                 
                 <?php if ($edit_category): ?>
-                    <a href="quiz_categories.php" class="btn btn-secondary" style="width: 100%; margin-top: 10px; justify-content: center;">
+                    <a href="quiz_categories.php" class="btn btn-secondary" style="margin-top: 10px;">
                         <i class="fas fa-times"></i> Cancel Edit
                     </a>
                 <?php endif; ?>
@@ -379,13 +464,16 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div style="text-align: center; padding: 40px; color: #6b7280;">
-                    <i class="fas fa-tags" style="font-size: 3em; margin-bottom: 10px; color: #cbd5e0;"></i>
-                    <p>No categories yet. Create your first category!</p>
+                <div class="empty-state">
+                    <i class="fas fa-tags"></i>
+                    <h3>No Categories Yet</h3>
+                    <p>Create your first category to organize your quizzes!</p>
                 </div>
             <?php endif; ?>
         </div>
     </div>
+
+    </main>
 </div>
 
 </body>

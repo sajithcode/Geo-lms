@@ -206,87 +206,62 @@ include '../includes/header.php';
 ?>
 <script>document.title = 'Resource Management - Admin Panel';</script>
 
-<style>
-.admin-container {
-    display: flex;
-    min-height: 100vh;
-    background: #f7fafc;
-}
+    <style>
+        :root {
+            --admin-primary: #0a74da;
+            --admin-secondary: #1c3d5a;
+            --admin-success: #10b981;
+            --admin-warning: #f59e0b;
+            --admin-danger: #ef4444;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f7fc;
+        }
+        
+        .sidebar {
+            background: #1c3d5a;
+        }
 
-.admin-sidebar {
-    width: 250px;
-    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    position: fixed;
-    height: 100vh;
-    overflow-y: auto;
-}
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, #0a74da 0%, #1c3d5a 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(10, 116, 218, 0.3);
+        }
 
-.admin-sidebar h2 {
-    margin: 0 0 30px 0;
-    font-size: 1.5em;
-}
+        .page-header h1 {
+            margin: 0 0 8px 0;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-.admin-nav {
-    list-style: none;
-    padding: 0;
-}
-
-.admin-nav li {
-    margin-bottom: 10px;
-}
-
-.admin-nav a {
-    color: white;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 15px;
-    border-radius: 8px;
-    transition: background 0.3s ease;
-}
-
-.admin-nav a:hover,
-.admin-nav a.active {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.admin-content {
-    margin-left: 250px;
-    flex: 1;
-    padding: 30px;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    color: #2d3748;
-    margin: 0 0 10px 0;
-}
-
-.alert {
+        .page-header p {
+            margin: 0;
+            opacity: 0.95;
+        }.alert {
     padding: 15px 20px;
     border-radius: 8px;
     margin-bottom: 20px;
 }
 
-.alert-success {
-    background: #c6f6d5;
-    color: #22543d;
-    border-left: 4px solid #38a169;
-}
-
-.alert-error {
-    background: #fed7d7;
-    color: #742a2a;
-    border-left: 4px solid #e53e3e;
-}
-
-.upload-section {
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }.upload-section {
     background: white;
     padding: 25px;
     border-radius: 10px;
@@ -326,14 +301,12 @@ include '../includes/header.php';
     font-size: 1em;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.btn {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+        }.btn {
     padding: 12px 24px;
     border: none;
     border-radius: 6px;
@@ -345,17 +318,15 @@ include '../includes/header.php';
     transition: all 0.3s ease;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.btn-danger {
+        .btn-primary {
+            background: var(--admin-primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--admin-secondary);
+            transform: translateY(-2px);
+        }.btn-danger {
     background: #e53e3e;
     color: white;
     padding: 8px 16px;
@@ -384,12 +355,10 @@ include '../includes/header.php';
     transition: all 0.3s ease;
 }
 
-.tab.active {
-    color: #667eea;
-    border-bottom-color: #667eea;
-}
-
-.tab-content {
+        .tab.active {
+            color: var(--admin-primary);
+            border-bottom-color: var(--admin-primary);
+        }.tab-content {
     display: none;
 }
 
@@ -439,12 +408,10 @@ tr:hover {
     font-weight: 600;
 }
 
-.badge-category {
-    background: #e6f2ff;
-    color: #0066cc;
-}
-
-.file-size {
+        .badge-category {
+            background: #dbeafe;
+            color: #1e40af;
+        }.file-size {
     color: #718096;
     font-size: 0.9em;
 }
@@ -462,28 +429,57 @@ tr:hover {
     color: #ed8936;
     margin-bottom: 15px;
 }
+
+.warning-box h3 {
+    color: #92400e;
+    margin: 0 0 10px;
+}
+
+.warning-box code {
+    background: #fef3c7;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #cbd5e0;
+}
+
+.empty-state i {
+    font-size: 4em;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tabs {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .tab {
+        text-align: center;
+    }
+}
 </style>
 
-<div class="admin-container">
-    <!-- Admin Sidebar -->
-    <aside class="admin-sidebar">
-        <h2><i class="fas fa-shield-alt"></i> Admin Panel</h2>
-        <ul class="admin-nav">
-            <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-            <li><a href="users.php"><i class="fas fa-users"></i> Users</a></li>
-            <li><a href="quizzes.php"><i class="fas fa-question-circle"></i> Quizzes</a></li>
-            <li><a href="resources.php" class="active"><i class="fas fa-book"></i> Resources</a></li>
-            <li><a href="feedback.php"><i class="fas fa-comments"></i> Feedback</a></li>
-            <li><a href="../pages/dashboard.php"><i class="fas fa-home"></i> User View</a></li>
-            <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-    </aside>
+<div class="dashboard-container">
+    <?php include 'includes/sidebar.php'; ?>
 
-    <!-- Main Content -->
-    <main class="admin-content">
+    <main class="main-content">
+        <!-- Page Header -->
         <div class="page-header">
-            <h1><i class="fas fa-book"></i> Resource Management</h1>
-            <p>Upload and manage learning resources (Notes, E-books, Past Papers)</p>
+            <h1>
+                <i class="fa-solid fa-book"></i>
+                Learning Resources
+            </h1>
+            <p>Upload and manage notes, e-books, and past papers for the learning management system</p>
         </div>
 
         <?php if (!$has_resource_tables): ?>
@@ -605,9 +601,11 @@ tr:hover {
                     <tbody>
                         <?php if (empty($notes)): ?>
                         <tr>
-                            <td colspan="7" style="text-align:center; padding: 40px; color: #cbd5e0;">
-                                <i class="fas fa-inbox" style="font-size: 2em;"></i><br>
-                                No notes uploaded yet.
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <div>No notes uploaded yet.</div>
+                                </div>
                             </td>
                         </tr>
                         <?php else: ?>
@@ -663,9 +661,11 @@ tr:hover {
                     <tbody>
                         <?php if (empty($ebooks)): ?>
                         <tr>
-                            <td colspan="8" style="text-align:center; padding: 40px; color: #cbd5e0;">
-                                <i class="fas fa-inbox" style="font-size: 2em;"></i><br>
-                                No e-books uploaded yet.
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <div>No e-books uploaded yet.</div>
+                                </div>
                             </td>
                         </tr>
                         <?php else: ?>
@@ -723,9 +723,11 @@ tr:hover {
                     <tbody>
                         <?php if (empty($pastpapers)): ?>
                         <tr>
-                            <td colspan="9" style="text-align:center; padding: 40px; color: #cbd5e0;">
-                                <i class="fas fa-inbox" style="font-size: 2em;"></i><br>
-                                No past papers uploaded yet.
+                            <td colspan="9">
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <div>No past papers uploaded yet.</div>
+                                </div>
                             </td>
                         </tr>
                         <?php else: ?>

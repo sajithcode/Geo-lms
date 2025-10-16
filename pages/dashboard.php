@@ -22,61 +22,75 @@ include '../includes/header.php';
         </header>
 
         <div class="dashboard-cards">
-            <div class="card student">
-                <div class="card-icon"><i class="fa-solid fa-user-graduate"></i></div>
-                <div class="card-info">
-                    <h4>Student Registration</h4>
-                    <p>Manage student enrollment and profiles.</p>
+            <a href="settings.php" style="text-decoration:none;color:inherit;">
+                <div class="card student">
+                    <div class="card-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                    <div class="card-info">
+                        <h4>Student Registration</h4>
+                        <p>Manage student enrollment and profiles.</p>
+                    </div>
                 </div>
-            </div>
+            </a>
 
-            <div class="card quizzes">
-                <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-                <div class="card-info">
-                    <h4>Quizzes</h4>
-                    <p>Take and manage assessments.</p>
+            <a href="quizzes.php" style="text-decoration:none;color:inherit;">
+                <div class="card quizzes">
+                    <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                    <div class="card-info">
+                        <h4>Quizzes</h4>
+                        <p>Take and manage assessments.</p>
+                    </div>
                 </div>
-            </div>
+            </a>
 
-            <div class="card notifications">
-                <div class="card-icon"><i class="fa-solid fa-bell"></i></div>
-                <div class="card-info">
-                    <h4>Notifications</h4>
-                    <p>View recent updates and alerts.</p>
+            <a href="messages.php" style="text-decoration:none;color:inherit;">
+                <div class="card notifications">
+                    <div class="card-icon"><i class="fa-solid fa-bell"></i></div>
+                    <div class="card-info">
+                        <h4>Notifications</h4>
+                        <p>View recent updates and alerts.</p>
+                    </div>
                 </div>
-            </div>
+            </a>
 
-            <div class="card progress">
-                <div class="card-icon"><i class="fa-solid fa-chart-pie"></i></div>
-                <div class="card-info">
-                    <h4>Performance Tracking</h4>
-                    <p>Track learning progress over time.</p>
+            <a href="performance.php" style="text-decoration:none;color:inherit;">
+                <div class="card progress">
+                    <div class="card-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                    <div class="card-info">
+                        <h4>Performance Tracking</h4>
+                        <p>Track learning progress over time.</p>
+                    </div>
                 </div>
-            </div>
+            </a>
 
-            <div class="card teacher">
-                <div class="card-icon"><i class="fa-solid fa-comments"></i></div>
-                <div class="card-info">
-                    <h4>Teacher Interaction</h4>
-                    <p>Communicate with instructors and mentors.</p>
+            <a href="interaction.php" style="text-decoration:none;color:inherit;">
+                <div class="card teacher">
+                    <div class="card-icon"><i class="fa-solid fa-comments"></i></div>
+                    <div class="card-info">
+                        <h4>Teacher Interaction</h4>
+                        <p>Communicate with instructors and mentors.</p>
+                    </div>
                 </div>
-            </div>
+            </a>
 
-            <div class="card resources">
-                <div class="card-icon"><i class="fa-solid fa-book"></i></div>
-                <div class="card-info">
-                    <h4>Learning Resources</h4>
-                    <p>Access notes, e-books, and pastpapers.</p>
+            <a href="learning_resources.php" style="text-decoration:none;color:inherit;">
+                <div class="card resources">
+                    <div class="card-icon"><i class="fa-solid fa-book"></i></div>
+                    <div class="card-info">
+                        <h4>Learning Resources</h4>
+                        <p>Access notes, e-books, and pastpapers.</p>
+                    </div>
                 </div>
-            </div>
+            </a>
 
-            <div class="card feedback">
-                <div class="card-icon"><i class="fa-solid fa-star"></i></div>
-                <div class="card-info">
-                    <h4>Feedback</h4>
-                    <p>Submit suggestions and bug reports.</p>
+            <a href="feedback.php" style="text-decoration:none;color:inherit;">
+                <div class="card feedback">
+                    <div class="card-icon"><i class="fa-solid fa-star"></i></div>
+                    <div class="card-info">
+                        <h4>Feedback</h4>
+                        <p>Submit suggestions and bug reports.</p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </main>
 </div>

@@ -52,267 +52,357 @@ try {
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <style>
         :root {
-            --admin-primary: #667eea;
-            --admin-secondary: #764ba2;
+            --admin-primary: #0a74da;
+            --admin-secondary: #1c3d5a;
             --admin-success: #10b981;
             --admin-warning: #f59e0b;
             --admin-danger: #ef4444;
+            --admin-info: #3b82f6;
         }
         
-        .admin-header {
-            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f7fc;
+        }
+        
+        .sidebar {
+            background: #1c3d5a;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, #0a74da 0%, #1c3d5a 100%);
             color: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(10, 116, 218, 0.3);
         }
-        
-        .admin-header h1 {
-            margin: 0 0 8px;
+
+        .page-header h1 {
+            margin: 0 0 8px 0;
+            font-size: 2em;
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        
+
+        .page-header p {
+            margin: 0;
+            opacity: 0.95;
+        }
+
         .admin-badge {
             background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.5em;
             font-weight: 600;
+            letter-spacing: 0.5px;
         }
-        
-        .admin-nav {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-        
-        .admin-nav-links {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .admin-nav-links a {
-            padding: 10px 20px;
-            background: var(--admin-primary);
-            color: white;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .admin-nav-links a:hover {
-            background: var(--admin-secondary);
-            transform: translateY(-2px);
-        }
-        
+
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 30px;
         }
         
-        .stat-box {
+        .stat-card {
             background: white;
-            padding: 24px;
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border-left: 4px solid var(--admin-primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
         }
-        
-        .stat-box.success { border-left-color: var(--admin-success); }
-        .stat-box.warning { border-left-color: var(--admin-warning); }
-        .stat-box.danger { border-left-color: var(--admin-danger); }
-        
-        .stat-box h3 {
-            margin: 0 0 8px;
-            color: #6b7280;
-            font-size: 14px;
-            font-weight: 500;
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
-        
-        .stat-box .stat-value {
-            font-size: 32px;
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #0a74da 0%, #1c3d5a 100%); color: white; }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .stat-icon.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+
+        .stat-details h3 {
+            margin: 0;
+            font-size: 2em;
+            color: #2d3748;
             font-weight: 700;
-            color: #111827;
         }
-        
-        .admin-section {
+
+        .stat-details p {
+            margin: 5px 0 0 0;
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        /* Data Sections */
+        .data-section {
             background: white;
-            padding: 24px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            overflow: hidden;
         }
-        
-        .admin-section h2 {
-            margin: 0 0 16px;
-            font-size: 18px;
-            color: #111827;
+
+        .section-header {
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-bottom: 2px solid #e2e8f0;
         }
-        
-        .admin-table {
+
+        .section-header h2 {
+            margin: 0;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3em;
+        }
+
+        /* Tables */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
         }
-        
-        .admin-table th {
+
+        .data-table th,
+        .data-table td {
+            padding: 15px;
             text-align: left;
-            padding: 12px;
-            background: #f9fafb;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background: #f7fafc;
+            color: #4a5568;
             font-weight: 600;
-            font-size: 13px;
-            color: #6b7280;
+            font-size: 0.9em;
             text-transform: uppercase;
         }
-        
-        .admin-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
+
+        .data-table tr:hover {
+            background: #f7fafc;
         }
-        
-        .admin-table tr:hover {
-            background: #f9fafb;
-        }
-        
+
         .role-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
+            padding: 6px 12px;
+            border-radius: 20px;
             font-weight: 600;
+            font-size: 0.85em;
             text-transform: uppercase;
         }
-        
+
         .role-badge.admin {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .role-badge.instructor {
             background: #dbeafe;
             color: #1e40af;
         }
-        
-        .role-badge.student {
+
+        .role-badge.teacher {
             background: #d1fae5;
             color: #065f46;
+        }
+
+        .role-badge.student {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .action-link {
+            color: var(--admin-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .action-link:hover {
+            color: var(--admin-secondary);
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #cbd5e0;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="admin-dashboard">
-    <div class="admin-header">
-        <h1>
-            <i class="fa-solid fa-shield-halved"></i>
-            Admin Dashboard
-            <span class="admin-badge">ADMINISTRATOR</span>
-        </h1>
-        <p>Welcome back, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
-    </div>
+<div class="dashboard-container">
+    <?php include 'includes/sidebar.php'; ?>
 
-    <div class="admin-nav">
-        <div class="admin-nav-links">
-            <a href="dashboard.php"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-            <a href="users.php"><i class="fa-solid fa-users"></i> Manage Users</a>
-            <a href="quizzes.php"><i class="fa-solid fa-puzzle-piece"></i> Manage Quizzes</a>
-            <a href="quiz_categories.php"><i class="fa-solid fa-tags"></i> Quiz Categories</a>
-            <a href="resources.php"><i class="fa-solid fa-book"></i> Manage Resources</a>
-            <a href="feedback.php"><i class="fa-solid fa-message"></i> View Feedback</a>
-            <a href="../auth/logout.php" style="background: #ef4444;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>
+                <i class="fa-solid fa-shield-halved"></i>
+                Admin Dashboard
+                <span class="admin-badge">ADMINISTRATOR</span>
+            </h1>
+            <p>Welcome back, <?php echo htmlspecialchars($_SESSION['username']); ?>! Manage your learning management system</p>
         </div>
-    </div>
 
-    <div class="stats-grid">
-        <div class="stat-box">
-            <h3><i class="fa-solid fa-users"></i> Total Users</h3>
-            <div class="stat-value"><?php echo number_format($total_users); ?></div>
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="stat-details">
+                    <h3><?php echo number_format($total_users); ?></h3>
+                    <p>Total Users</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fa-solid fa-puzzle-piece"></i>
+                </div>
+                <div class="stat-details">
+                    <h3><?php echo number_format($total_quizzes); ?></h3>
+                    <p>Total Quizzes</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <div class="stat-details">
+                    <h3><?php echo number_format($total_attempts); ?></h3>
+                    <p>Quiz Attempts</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon red">
+                    <i class="fa-solid fa-message"></i>
+                </div>
+                <div class="stat-details">
+                    <h3><?php echo number_format($total_feedback); ?></h3>
+                    <p>Feedback Messages</p>
+                </div>
+            </div>
         </div>
-        
-        <div class="stat-box success">
-            <h3><i class="fa-solid fa-puzzle-piece"></i> Total Quizzes</h3>
-            <div class="stat-value"><?php echo number_format($total_quizzes); ?></div>
-        </div>
-        
-        <div class="stat-box warning">
-            <h3><i class="fa-solid fa-clipboard-list"></i> Quiz Attempts</h3>
-            <div class="stat-value"><?php echo number_format($total_attempts); ?></div>
-        </div>
-        
-        <div class="stat-box danger">
-            <h3><i class="fa-solid fa-message"></i> Feedback Messages</h3>
-            <div class="stat-value"><?php echo number_format($total_feedback); ?></div>
-        </div>
-    </div>
 
-    <div class="admin-section">
-        <h2><i class="fa-solid fa-user-plus"></i> Recent Users</h2>
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Joined</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($recent_users)): ?>
-                    <?php foreach ($recent_users as $user): ?>
+        <!-- Recent Users Section -->
+        <div class="data-section">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-user-plus"></i> Recent Users</h2>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <td><?php echo $user['user_id']; ?></td>
-                            <td><?php echo htmlspecialchars($user['username']); ?></td>
-                            <td><?php echo htmlspecialchars($user['email']); ?></td>
-                            <td><span class="role-badge <?php echo $user['role']; ?>"><?php echo $user['role']; ?></span></td>
-                            <td><?php echo date('M j, Y', strtotime($user['created_at'])); ?></td>
-                            <td>
-                                <a href="users.php?edit=<?php echo $user['user_id']; ?>" style="color: var(--admin-primary);">Edit</a>
-                            </td>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
                         </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr><td colspan="6" style="text-align:center; color:#6b7280;">No users found</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($recent_users)): ?>
+                            <?php foreach ($recent_users as $user): ?>
+                                <tr>
+                                    <td><?php echo $user['user_id']; ?></td>
+                                    <td><strong><?php echo htmlspecialchars($user['username']); ?></strong></td>
+                                    <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                    <td><span class="role-badge <?php echo $user['role']; ?>"><?php echo $user['role']; ?></span></td>
+                                    <td><?php echo date('M j, Y', strtotime($user['created_at'])); ?></td>
+                                    <td>
+                                        <a href="users.php?edit=<?php echo $user['user_id']; ?>" class="action-link">
+                                            <i class="fa-solid fa-edit"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <i class="fa-solid fa-users"></i>
+                                        <h3>No Users Found</h3>
+                                        <p>No recent users to display</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    <div class="admin-section">
-        <h2><i class="fa-solid fa-comments"></i> Recent Feedback</h2>
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>User</th>
-                    <th>Message</th>
-                    <th>Submitted</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($recent_feedback)): ?>
-                    <?php foreach ($recent_feedback as $fb): ?>
+        <!-- Recent Feedback Section -->
+        <div class="data-section">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-comments"></i> Recent Feedback</h2>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <td><?php echo $fb['feedback_id']; ?></td>
-                            <td><?php echo $fb['username'] ? htmlspecialchars($fb['username']) : 'Anonymous'; ?></td>
-                            <td><?php echo htmlspecialchars(substr($fb['message'], 0, 100)); ?><?php echo strlen($fb['message']) > 100 ? '...' : ''; ?></td>
-                            <td><?php echo date('M j, Y g:i A', strtotime($fb['created_at'])); ?></td>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Message</th>
+                            <th>Submitted</th>
                         </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr><td colspan="4" style="text-align:center; color:#6b7280;">No feedback yet</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($recent_feedback)): ?>
+                            <?php foreach ($recent_feedback as $fb): ?>
+                                <tr>
+                                    <td><?php echo $fb['feedback_id']; ?></td>
+                                    <td><strong><?php echo $fb['username'] ? htmlspecialchars($fb['username']) : 'Anonymous'; ?></strong></td>
+                                    <td><?php echo htmlspecialchars(substr($fb['message'], 0, 100)); ?><?php echo strlen($fb['message']) > 100 ? '...' : ''; ?></td>
+                                    <td><?php echo date('M j, Y g:i A', strtotime($fb['created_at'])); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="4">
+                                    <div class="empty-state">
+                                        <i class="fa-solid fa-comments"></i>
+                                        <h3>No Feedback Yet</h3>
+                                        <p>User feedback will appear here</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
 </div>
 
 </body>

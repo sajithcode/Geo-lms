@@ -117,26 +117,43 @@ $total_questions = $stmt->fetch()['total'];
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <style>
         :root {
-            --admin-primary: #667eea;
-            --admin-secondary: #764ba2;
+            --admin-primary: #0a74da;
+            --admin-secondary: #1c3d5a;
             --admin-success: #10b981;
             --admin-warning: #f59e0b;
             --admin-danger: #ef4444;
         }
         
-        .admin-header {
-            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 24px;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f7fc;
         }
         
-        .admin-header h1 {
-            margin: 0 0 8px;
+        .sidebar {
+            background: #1c3d5a;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, #0a74da 0%, #1c3d5a 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(10, 116, 218, 0.3);
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px 0;
+            font-size: 2em;
             display: flex;
             align-items: center;
             gap: 12px;
+        }
+
+        .page-header p {
+            margin: 0;
+            opacity: 0.95;
         }
         
         .stats-grid {
@@ -146,25 +163,46 @@ $total_questions = $stmt->fetch()['total'];
             margin-bottom: 24px;
         }
         
-        .stat-box {
+        .stat-card {
             background: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border-left: 4px solid var(--admin-primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
         }
-        
-        .stat-box h3 {
-            margin: 0 0 8px;
-            color: #6b7280;
-            font-size: 14px;
-            font-weight: 500;
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
-        
-        .stat-box .stat-value {
-            font-size: 32px;
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #0a74da 0%, #1c3d5a 100%); color: white; }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .stat-icon.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
+
+        .stat-details h3 {
+            margin: 0;
+            font-size: 2em;
+            color: #2d3748;
             font-weight: 700;
-            color: #111827;
+        }
+
+        .stat-details p {
+            margin: 5px 0 0 0;
+            color: #718096;
+            font-size: 0.9em;
         }
         
         .action-bar {
@@ -357,41 +395,71 @@ $total_questions = $stmt->fetch()['total'];
             color: #cbd5e0;
             margin-bottom: 20px;
         }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="admin-dashboard">
-    <div class="admin-header">
-        <h1>
-            <i class="fa-solid fa-puzzle-piece"></i>
-            Quiz Management
-        </h1>
-        <p>Create, edit, and manage quizzes for your students</p>
-    </div>
+<div class="dashboard-container">
+    <?php include 'includes/sidebar.php'; ?>
 
-    <!-- Statistics -->
-    <div class="stats-grid">
-        <div class="stat-box">
-            <h3><i class="fa-solid fa-puzzle-piece"></i> Total Quizzes</h3>
-            <div class="stat-value"><?php echo number_format($total_quizzes); ?></div>
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>
+                <i class="fa-solid fa-puzzle-piece"></i>
+                Quiz Management
+            </h1>
+            <p>Create, edit, and manage all quizzes in the system</p>
         </div>
-        
-        <div class="stat-box">
-            <h3><i class="fa-solid fa-check-circle"></i> Active Quizzes</h3>
-            <div class="stat-value"><?php echo number_format($active_quizzes); ?></div>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fa-solid fa-puzzle-piece"></i>
+                </div>
+                <div class="stat-details">
+                    <h3><?php echo number_format($total_quizzes); ?></h3>
+                    <p>Total Quizzes</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fa-solid fa-check-circle"></i>
+                </div>
+                <div class="stat-details">
+                    <h3><?php echo number_format($active_quizzes); ?></h3>
+                    <p>Active Quizzes</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <div class="stat-details">
+                    <h3><?php echo number_format($total_attempts); ?></h3>
+                    <p>Total Attempts</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fa-solid fa-question-circle"></i>
+                </div>
+                <div class="stat-details">
+                    <h3><?php echo number_format($total_questions); ?></h3>
+                    <p>Total Questions</p>
+                </div>
+            </div>
         </div>
-        
-        <div class="stat-box">
-            <h3><i class="fa-solid fa-clipboard-list"></i> Total Attempts</h3>
-            <div class="stat-value"><?php echo number_format($total_attempts); ?></div>
-        </div>
-        
-        <div class="stat-box">
-            <h3><i class="fa-solid fa-question-circle"></i> Total Questions</h3>
-            <div class="stat-value"><?php echo number_format($total_questions); ?></div>
-        </div>
-    </div>
 
     <!-- Messages -->
     <?php if (isset($_SESSION['success_message'])): ?>
@@ -408,26 +476,25 @@ $total_questions = $stmt->fetch()['total'];
         </div>
     <?php endif; ?>
 
-    <!-- Action Bar -->
-    <div class="action-bar">
-        <div>
-            <a href="dashboard.php" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-            </a>
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <div>
+                <a href="quiz_categories.php" class="btn btn-warning">
+                    <i class="fa-solid fa-tags"></i> Manage Categories
+                </a>
+            </div>
+            <div>
+                <a href="create_quiz.php" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Create New Quiz
+                </a>
+            </div>
         </div>
-        <div>
-            <a href="quiz_categories.php" class="btn btn-warning">
-                <i class="fa-solid fa-tags"></i> Manage Categories
-            </a>
-            <a href="create_quiz.php" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Create New Quiz
-            </a>
-        </div>
-    </div>
 
-    <!-- Quizzes Table -->
-    <div class="quiz-table-container">
-        <h2 style="margin: 0 0 20px 0;"><i class="fas fa-list"></i> All Quizzes</h2>
+        <!-- Quizzes Table -->
+        <div class="quiz-table-container">
+            <h2 style="margin: 0 0 20px 0; color: #2d3748; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-list"></i> All Quizzes (<?php echo count($quizzes); ?>)
+            </h2>
         
         <?php if (count($quizzes) > 0): ?>
         <table class="quiz-table">
@@ -544,7 +611,9 @@ $total_questions = $stmt->fetch()['total'];
                 </a>
             </div>
         <?php endif; ?>
-    </div>
+        </div>
+
+    </main>
 </div>
 
 </body>
