@@ -1,11 +1,11 @@
 <?php
-$currentPage = 'interaction';
+$currentPage = 'teacher_interaction';
 
-require_once '../php/session_check.php';
+require_once 'php/teacher_session_check.php';
 require_once '../config/database.php';
 
 $user_id = $_SESSION['id'];
-$user_role = $_SESSION['role'] ?? 'student';
+$user_role = 'teacher';
 
 // Check if communication tables exist
 $tables_check = [];
@@ -60,26 +60,23 @@ $announcement_stats = ['total' => 0];
 if ($tables_check['announcements']) {
     try {
         // Total published announcements
-        $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM announcements 
-                               WHERE status = 'published'");
-        $stmt->execute();
+        $stmt = $pdo->query("SELECT COUNT(*) as count FROM announcements WHERE status = 'published'");
         $announcement_stats['total'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
     } catch (PDOException $e) {
         // Error fetching stats
     }
 }
 
-// Get recent announcements
+// Get recent announcements (created by this teacher or all)
 $recent_announcements = [];
 if ($tables_check['announcements']) {
     try {
-        $stmt = $pdo->prepare("SELECT a.*, u.username as author_name 
+        $stmt = $pdo->query("SELECT a.*, u.username as author_name 
                                FROM announcements a 
                                LEFT JOIN users u ON a.published_by = u.user_id 
                                WHERE a.status = 'published'
-                               ORDER BY a.published_at DESC 
+                               ORDER BY a.created_at DESC 
                                LIMIT 5");
-        $stmt->execute();
         $recent_announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         $recent_announcements = [];
@@ -118,430 +115,414 @@ if ($tables_check['notifications']) {
         $recent_notifications = [];
     }
 }
-
-include '../includes/header.php';
 ?>
-<script>document.title = 'Interaction Hub - Self-Learning Hub';</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaction Hub - Teacher Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <style>
+        :root {
+            --teacher-primary: #10b981;
+            --teacher-secondary: #059669;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f7fc;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, #059669 0%, #047857 100%);
+        }
 
-<style>
-.interaction-container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
+        .interaction-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-.interaction-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 40px;
-    border-radius: 15px;
-    margin-bottom: 30px;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-}
+        .interaction-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
 
-.interaction-header h1 {
-    margin: 0 0 10px 0;
-    font-size: 2.5em;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+        .interaction-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-.interaction-header p {
-    margin: 0;
-    font-size: 1.1em;
-    opacity: 0.95;
-}
+        .interaction-header p {
+            margin: 0;
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
 
-.quick-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-.stat-card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-}
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
 
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
 
-.stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8em;
-}
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+        }
 
-.stat-icon.blue {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
+        .stat-icon.green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
 
-.stat-icon.green {
-    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    color: white;
-}
+        .stat-icon.blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
 
-.stat-icon.orange {
-    background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
-    color: white;
-}
+        .stat-icon.orange {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
 
-.stat-icon.purple {
-    background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
-    color: white;
-}
+        .stat-icon.purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
 
-.stat-details h3 {
-    margin: 0;
-    font-size: 2em;
-    color: #2d3748;
-}
+        .stat-details h3 {
+            margin: 0;
+            font-size: 2em;
+            color: #2d3748;
+        }
 
-.stat-details p {
-    margin: 5px 0 0 0;
-    color: #718096;
-    font-size: 0.9em;
-}
+        .stat-details p {
+            margin: 5px 0 0 0;
+            color: #718096;
+            font-size: 0.9em;
+        }
 
-.stat-badge {
-    background: #e53e3e;
-    color: white;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.75em;
-    font-weight: 600;
-    margin-left: auto;
-}
+        .stat-badge {
+            background: #e53e3e;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: auto;
+        }
 
-.communication-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 25px;
-    margin-bottom: 30px;
-}
+        .communication-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
 
-.comm-section {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    overflow: hidden;
-}
+        .comm-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
 
-.section-header {
-    padding: 20px 25px;
-    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-    border-bottom: 2px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        .section-header {
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.section-header h2 {
-    margin: 0;
-    color: #2d3748;
-    font-size: 1.3em;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+        .section-header h2 {
+            margin: 0;
+            color: #2d3748;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.btn-view-all {
-    padding: 8px 16px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    text-decoration: none;
-    font-size: 0.9em;
-    transition: all 0.3s ease;
-}
+        .btn-view-all {
+            padding: 8px 16px;
+            background: var(--teacher-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
 
-.btn-view-all:hover {
-    background: #764ba2;
-    transform: translateY(-2px);
-}
+        .btn-view-all:hover {
+            background: var(--teacher-secondary);
+            transform: translateY(-2px);
+        }
 
-.section-content {
-    padding: 20px 25px;
-    max-height: 400px;
-    overflow-y: auto;
-}
+        .section-content {
+            padding: 20px 25px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
 
-.item-card {
-    padding: 15px;
-    border-bottom: 1px solid #e2e8f0;
-    transition: background 0.2s ease;
-    cursor: pointer;
-}
+        .item-card {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.2s ease;
+            cursor: pointer;
+        }
 
-.item-card:hover {
-    background: #f7fafc;
-}
+        .item-card:hover {
+            background: #f7fafc;
+        }
 
-.item-card:last-child {
-    border-bottom: none;
-}
+        .item-card:last-child {
+            border-bottom: none;
+        }
 
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: 8px;
-}
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
 
-.item-title {
-    font-weight: 600;
-    color: #2d3748;
-    margin: 0;
-}
+        .item-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
 
-.item-meta {
-    display: flex;
-    gap: 10px;
-    font-size: 0.85em;
-    color: #718096;
-    align-items: center;
-}
+        .item-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.85em;
+            color: #718096;
+            align-items: center;
+        }
 
-.item-badge {
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.8em;
-    font-weight: 600;
-}
+        .item-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
 
-.badge-unread {
-    background: #fed7d7;
-    color: #742a2a;
-}
+        .badge-unread {
+            background: #fed7d7;
+            color: #742a2a;
+        }
 
-.badge-role {
-    background: #e6f2ff;
-    color: #0066cc;
-}
+        .badge-role {
+            background: #e6f2ff;
+            color: #0066cc;
+        }
 
-.badge-admin {
-    background: #fed7d7;
-    color: #742a2a;
-}
+        .badge-priority {
+            margin-right: 8px;
+        }
 
-.badge-instructor {
-    background: #feebc8;
-    color: #7c2d12;
-}
+        .badge-priority.low {
+            background: #f0f9ff;
+            color: #0369a1;
+        }
 
-.badge-priority {
-    margin-right: 8px;
-}
+        .badge-priority.medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
 
-.badge-priority.low {
-    background: #f0f9ff;
-    color: #0369a1;
-}
+        .badge-priority.high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
 
-.badge-priority.medium {
-    background: #fef3c7;
-    color: #d97706;
-}
+        .badge-status {
+            font-size: 0.75em;
+        }
 
-.badge-priority.high {
-    background: #fee2e2;
-    color: #dc2626;
-}
+        .badge-status.published {
+            background: #d1fae5;
+            color: #065f46;
+        }
 
-.badge-status {
-    font-size: 0.75em;
-}
+        .badge-status.draft {
+            background: #f3f4f6;
+            color: #374151;
+        }
 
-.badge-status.published {
-    background: #d1fae5;
-    color: #065f46;
-}
+        .badge-status.archived {
+            background: #fed7d7;
+            color: #991b1b;
+        }
 
-.badge-status.draft {
-    background: #f3f4f6;
-    color: #374151;
-}
+        .item-preview {
+            color: #4a5568;
+            font-size: 0.9em;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-.badge-status.archived {
-    background: #fed7d7;
-    color: #991b1b;
-}
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #cbd5e0;
+        }
 
-.item-preview {
-    color: #4a5568;
-    font-size: 0.9em;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
 
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #cbd5e0;
-}
+        .empty-state h3 {
+            color: #a0aec0;
+            margin: 0 0 10px 0;
+        }
 
-.empty-state i {
-    font-size: 4em;
-    margin-bottom: 20px;
-}
+        .empty-state p {
+            color: #cbd5e0;
+            margin: 0;
+        }
 
-.empty-state h3 {
-    color: #a0aec0;
-    margin: 0 0 10px 0;
-}
+        .quick-actions {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
 
-.empty-state p {
-    color: #cbd5e0;
-    margin: 0;
-}
+        .quick-actions h2 {
+            margin: 0 0 20px 0;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.warning-box {
-    background: #fffaf0;
-    border: 2px solid #ed8936;
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 25px;
-}
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
 
-.warning-box i {
-    font-size: 3em;
-    color: #ed8936;
-    margin-bottom: 15px;
-}
+        .btn-action {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            color: inherit;
+        }
 
-.quick-actions {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    margin-bottom: 30px;
-}
+        .btn-action:hover {
+            border-color: var(--teacher-primary);
+            background: #f0fdf4;
+            transform: translateY(-2px);
+        }
 
-.quick-actions h2 {
-    margin: 0 0 20px 0;
-    color: #2d3748;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+        .btn-action i {
+            font-size: 1.5em;
+            color: var(--teacher-primary);
+        }
 
-.action-buttons {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
+        .btn-action-content h3 {
+            margin: 0;
+            color: #2d3748;
+            font-size: 1em;
+        }
 
-.btn-action {
-    flex: 1;
-    min-width: 200px;
-    padding: 15px 20px;
-    border: 2px solid #e2e8f0;
-    background: white;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.3s ease;
-    color: inherit;
-}
+        .btn-action-content p {
+            margin: 5px 0 0 0;
+            color: #718096;
+            font-size: 0.85em;
+        }
 
-.btn-action:hover {
-    border-color: #667eea;
-    background: #f7fafc;
-    transform: translateY(-2px);
-}
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
 
-.btn-action i {
-    font-size: 1.5em;
-    color: #667eea;
-}
+        .notif-quiz { background: #e6f2ff; color: #0066cc; }
+        .notif-message { background: #d1fae5; color: #065f46; }
+        .notif-announcement { background: #fef5e7; color: #d97706; }
+        .notif-resource { background: #f3e8ff; color: #7c3aed; }
 
-.btn-action-content h3 {
-    margin: 0;
-    color: #2d3748;
-    font-size: 1em;
-}
-
-.btn-action-content p {
-    margin: 5px 0 0 0;
-    color: #718096;
-    font-size: 0.85em;
-}
-
-.notification-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2em;
-    flex-shrink: 0;
-}
-
-.notif-quiz {
-    background: #e6f2ff;
-    color: #0066cc;
-}
-
-.notif-message {
-    background: #e6fffa;
-    color: #047857;
-}
-
-.notif-announcement {
-    background: #fef5e7;
-    color: #d97706;
-}
-
-.notif-resource {
-    background: #f3e8ff;
-    color: #7c3aed;
-}
-
-@media (max-width: 768px) {
-    .communication-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .action-buttons {
-        flex-direction: column;
-    }
-    
-    .btn-action {
-        min-width: 100%;
-    }
-}
-</style>
+        @media (max-width: 768px) {
+            .communication-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-action {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
 
 <div class="dashboard-container">
-    <?php include '../includes/sidebar.php'; ?>
+    <?php include 'includes/sidebar.php'; ?>
 
     <main class="main-content">
         <div class="interaction-container">
@@ -551,22 +532,13 @@ include '../includes/header.php';
                     <i class="fas fa-comments"></i>
                     Interaction Hub
                 </h1>
-                <p>Stay connected with instructors and classmates. Access messages, announcements, and notifications all in one place.</p>
+                <p>Connect with students and colleagues. Manage messages, announcements, and stay updated with notifications.</p>
             </div>
-
-            <?php if (!$tables_check['messages'] && !$tables_check['announcements']): ?>
-            <div class="warning-box">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h3>Communication Tables Not Found</h3>
-                <p>Please run the database migration to enable messaging and announcements.</p>
-                <p style="margin-top: 15px;"><a href="../docs/run_migration.php" class="btn-view-all">Run Migration</a></p>
-            </div>
-            <?php endif; ?>
 
             <!-- Quick Stats -->
             <div class="quick-stats">
-                <a href="messages.php" class="stat-card">
-                    <div class="stat-icon blue">
+                <a href="../pages/messages.php" class="stat-card">
+                    <div class="stat-icon green">
                         <i class="fas fa-envelope"></i>
                     </div>
                     <div class="stat-details">
@@ -586,7 +558,7 @@ include '../includes/header.php';
                 </a>
 
                 <div class="stat-card">
-                    <div class="stat-icon green">
+                    <div class="stat-icon blue">
                         <i class="fas fa-paper-plane"></i>
                     </div>
                     <div class="stat-details">
@@ -610,25 +582,23 @@ include '../includes/header.php';
             <div class="quick-actions">
                 <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
                 <div class="action-buttons">
-                    <a href="messages.php?tab=compose" class="btn-action">
+                    <a href="../pages/messages.php?tab=compose" class="btn-action">
                         <i class="fas fa-pen"></i>
                         <div class="btn-action-content">
                             <h3>Compose Message</h3>
-                            <p>Send a new message to instructors or classmates</p>
+                            <p>Send a message to students or colleagues</p>
                         </div>
                     </a>
 
-                    <?php if ($user_role === 'admin' || $user_role === 'instructor'): ?>
-                    <a href="../admin/announcements.php" class="btn-action">
+                    <a href="announcements.php" class="btn-action">
                         <i class="fas fa-bullhorn"></i>
                         <div class="btn-action-content">
                             <h3>Create Announcement</h3>
                             <p>Broadcast a message to students</p>
                         </div>
                     </a>
-                    <?php endif; ?>
 
-                    <a href="announcements.php" class="btn-action">
+                    <a href="../pages/announcements.php" class="btn-action">
                         <i class="fas fa-list"></i>
                         <div class="btn-action-content">
                             <h3>View All Announcements</h3>
@@ -639,8 +609,8 @@ include '../includes/header.php';
                     <a href="feedback.php" class="btn-action">
                         <i class="fas fa-comment-dots"></i>
                         <div class="btn-action-content">
-                            <h3>Send Feedback</h3>
-                            <p>Share your thoughts and suggestions</p>
+                            <h3>Student Feedback</h3>
+                            <p>Review feedback from students</p>
                         </div>
                     </a>
                 </div>
@@ -652,7 +622,7 @@ include '../includes/header.php';
                 <div class="comm-section">
                     <div class="section-header">
                         <h2><i class="fas fa-inbox"></i> Recent Messages</h2>
-                        <a href="messages.php" class="btn-view-all">View All</a>
+                        <a href="../pages/messages.php" class="btn-view-all">View All</a>
                     </div>
                     <div class="section-content">
                         <?php if (empty($recent_messages)): ?>
@@ -663,7 +633,7 @@ include '../includes/header.php';
                             </div>
                         <?php else: ?>
                             <?php foreach ($recent_messages as $msg): ?>
-                                <div class="item-card" onclick="window.location.href='messages.php'">
+                                <div class="item-card" onclick="window.location.href='../pages/messages.php'">
                                     <div class="item-header">
                                         <h3 class="item-title"><?php echo htmlspecialchars($msg['subject'] ?: 'No Subject'); ?></h3>
                                         <div class="item-meta">
@@ -773,4 +743,5 @@ include '../includes/header.php';
     </main>
 </div>
 
-<?php include '../includes/footer.php'; ?>
+</body>
+</html>

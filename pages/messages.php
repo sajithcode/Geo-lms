@@ -38,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
         try {
             $stmt = $pdo->prepare("INSERT INTO messages (sender_id, receiver_id, subject, message) VALUES (?, ?, ?, ?)");
             $stmt->execute([$user_id, $receiver_id, $subject, $message]);
-            $send_success = true;
             
             // Create notification for receiver
             try {
@@ -52,10 +51,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             } catch (PDOException $e) {
                 // Notifications table doesn't exist yet
             }
+            
+            // Redirect to prevent form resubmission on refresh
+            $_SESSION['message_sent'] = true;
+            header("Location: messages.php" . (isset($_GET['tab']) ? "?tab=" . urlencode($_GET['tab']) : ""));
+            exit;
         } catch (PDOException $e) {
             $send_error = "Error sending message: " . $e->getMessage();
         }
     }
+}
+
+// Check for success message from redirect
+if (isset($_SESSION['message_sent']) && $_SESSION['message_sent']) {
+    $send_success = true;
+    unset($_SESSION['message_sent']);
 }
 
 // Handle mark as read
@@ -65,6 +75,14 @@ if (isset($_GET['mark_read']) && $has_messages_table) {
         try {
             $stmt = $pdo->prepare("UPDATE messages SET is_read = 1, read_at = NOW() WHERE message_id = ? AND receiver_id = ?");
             $stmt->execute([$message_id, $user_id]);
+            
+            // Redirect to prevent resubmission on refresh
+            $redirect_url = "messages.php?tab=inbox";
+            if (isset($_GET['tab'])) {
+                $redirect_url .= "&tab=" . urlencode($_GET['tab']);
+            }
+            header("Location: " . $redirect_url);
+            exit;
         } catch (PDOException $e) {
             // Error marking as read
         }
