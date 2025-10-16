@@ -10,6 +10,25 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
+// Role-based access control - redirect non-students to their dashboards
+if (isset($_SESSION["role"])) {
+    $role = $_SESSION["role"];
+    
+    // If user is admin, redirect to admin dashboard
+    if ($role === 'admin') {
+        header("location: ../admin/dashboard.php");
+        exit;
+    }
+    
+    // If user is teacher, redirect to teacher dashboard
+    if ($role === 'teacher') {
+        header("location: ../teacher/dashboard.php");
+        exit;
+    }
+    
+    // Students continue normally to student pages
+}
+
 // Ensure backward compatibility - if 'id' exists but 'user_id' doesn't, set it
 if (isset($_SESSION["id"]) && !isset($_SESSION["user_id"])) {
     $_SESSION["user_id"] = $_SESSION["id"];

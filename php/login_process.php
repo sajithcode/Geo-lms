@@ -44,11 +44,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $_SESSION["loggedin"] = true;
                         $_SESSION["id"] = $id;
                         $_SESSION["username"] = $row["username"];
-                        $_SESSION["role"] = $row["role"];                            
+                        $_SESSION["role"] = $row["role"];
                         
-                        // Redirect user to the dashboard
-                        header("location: ../pages/dashboard.php");
-                        exit;
+                        // Role-based dashboard redirection
+                        $role = $row["role"];
+                        
+                        if ($role === 'admin') {
+                            // Redirect admin to admin dashboard
+                            header("location: ../admin/dashboard.php");
+                            exit;
+                        } elseif ($role === 'teacher') {
+                            // Redirect teacher to teacher dashboard
+                            header("location: ../teacher/dashboard.php");
+                            exit;
+                        } else {
+                            // Redirect student to student dashboard (default)
+                            header("location: ../pages/dashboard.php");
+                            exit;
+                        }
                     } else {
                         // Password is not valid, redirect back with an error
                         header("location: ../auth/index.php?error=invalid_credentials");
