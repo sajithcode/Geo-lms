@@ -1,9 +1,7 @@
 <?php
 $currentPage = 'resources';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once '../php/session_check.php';
 require_once '../config/database.php';
 
 // Check if pastpapers table exists
