@@ -24,8 +24,8 @@
             <li class="<?php echo ($currentPage == 'teacher_performance') ? 'active' : '' ?>">
                 <a href="performance.php"><i class="fa-solid fa-chart-line"></i> Performance</a>
             </li>
-            <li class="<?php echo ($currentPage == 'teacher_messages') ? 'active' : '' ?>">
-                <a href="messages.php"><i class="fa-solid fa-message"></i> Messages</a>
+            <li class="<?php echo ($currentPage == 'teacher_interaction') ? 'active' : '' ?>">
+                <a href="interaction.php"><i class="fa-solid fa-comments"></i> Interaction</a>
             </li>
             <li class="<?php echo ($currentPage == 'teacher_settings') ? 'active' : '' ?>">
                 <a href="settings.php"><i class="fa-solid fa-cog"></i> Settings</a>

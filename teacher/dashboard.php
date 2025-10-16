@@ -23,10 +23,18 @@ try {
     $total_attempts = $stmt->fetch();
     $total_attempts = $total_attempts ? $total_attempts['total'] : 0;
     
-    // Total resources
-    $stmt = $pdo->query("SELECT COUNT(*) as total FROM learning_resources");
-    $total_resources = $stmt->fetch();
-    $total_resources = $total_resources ? $total_resources['total'] : 0;
+    // Total resources - count from all resource tables
+    $total_resources = 0;
+    try {
+        $stmt = $pdo->query("SELECT 
+            (SELECT COUNT(*) FROM notes) + 
+            (SELECT COUNT(*) FROM ebooks) + 
+            (SELECT COUNT(*) FROM pastpapers) as total");
+        $result = $stmt->fetch();
+        $total_resources = $result ? $result['total'] : 0;
+    } catch (PDOException $e) {
+        error_log("Error fetching total resources: " . $e->getMessage());
+    }
     
     // Recent quiz attempts
     $stmt = $pdo->query("
@@ -338,6 +346,30 @@ try {
             <i class="fa-solid fa-chart-line"></i>
             <h3>Track Progress</h3>
             <p>Monitor student performance and grades</p>
+        </div>
+        
+        <div class="action-card" onclick="location.href='../pages/messages.php?tab=compose'">
+            <i class="fa-solid fa-pen"></i>
+            <h3>Compose Message</h3>
+            <p>Send a message to students or colleagues</p>
+        </div>
+        
+        <div class="action-card" onclick="location.href='announcements.php'">
+            <i class="fa-solid fa-bullhorn"></i>
+            <h3>Create Announcement</h3>
+            <p>Broadcast a message to students</p>
+        </div>
+        
+        <div class="action-card" onclick="location.href='../pages/announcements.php'">
+            <i class="fa-solid fa-list"></i>
+            <h3>View All Announcements</h3>
+            <p>See all announcements and updates</p>
+        </div>
+        
+        <div class="action-card" onclick="location.href='../pages/feedback.php'">
+            <i class="fa-solid fa-comment-dots"></i>
+            <h3>Student Feedback</h3>
+            <p>Review feedback from students</p>
         </div>
     </div>
 
