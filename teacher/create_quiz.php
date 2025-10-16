@@ -1,0 +1,446 @@
+<?php
+$currentPage = 'teacher_quizzes';
+
+// Include teacher session check
+require_once 'php/teacher_session_check.php';
+require_once '../config/database.php';
+require_once '../php/csrf.php';
+
+// Check which columns exist in the database
+$columns_check = $pdo->query("SHOW COLUMNS FROM quizzes")->fetchAll(PDO::FETCH_COLUMN);
+$has_category = in_array('category_id', $columns_check);
+$has_difficulty = in_array('difficulty', $columns_check);
+$has_time_limit = in_array('time_limit', $columns_check);
+$has_retry_limit = in_array('retry_limit', $columns_check);
+$has_randomize_q = in_array('randomize_questions', $columns_check);
+$has_randomize_a = in_array('randomize_answers', $columns_check);
+$has_show_answers = in_array('show_answers_after', $columns_check);
+$has_created_by = in_array('created_by', $columns_check);
+$has_is_active = in_array('is_active', $columns_check);
+
+// Fetch quiz categories if table exists
+$categories = [];
+try {
+    if ($has_category) {
+        $stmt = $pdo->query("SELECT * FROM quiz_categories ORDER BY category_name");
+        $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (PDOException $e) {
+    // Quiz categories table might not exist
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_validate_or_redirect('quizzes.php');
+    
+    // Get form data
+    $title = trim($_POST['title']);
+    $description = trim($_POST['description']);
+    $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
+    $difficulty = $_POST['difficulty'] ?? '';
+    $time_limit = filter_input(INPUT_POST, 'time_limit', FILTER_VALIDATE_INT) ?? 0;
+    $passing_score = filter_input(INPUT_POST, 'passing_score', FILTER_VALIDATE_FLOAT) ?? 60;
+    $retry_limit = filter_input(INPUT_POST, 'retry_limit', FILTER_VALIDATE_INT) ?? 0;
+    $randomize_questions = isset($_POST['randomize_questions']) ? 1 : 0;
+    $randomize_answers = isset($_POST['randomize_answers']) ? 1 : 0;
+    $show_answers_after = isset($_POST['show_answers_after']) ? 1 : 0;
+    $is_active = isset($_POST['is_active']) ? 1 : 0;
+    $created_by = $_SESSION['id'] ?? 1;
+    
+    // Validate required fields
+    if (empty($title)) {
+        $_SESSION['error_message'] = "Quiz title is required!";
+    } else {
+        try {
+            // Build dynamic INSERT query based on existing columns
+            $columns = ['title', 'description', 'passing_score'];
+            $values = [$title, $description, $passing_score];
+            $placeholders = ['?', '?', '?'];
+            
+            if ($has_category) {
+                $columns[] = 'category_id';
+                $values[] = $category_id;
+                $placeholders[] = '?';
+            }
+            if ($has_difficulty) {
+                $columns[] = 'difficulty';
+                $values[] = $difficulty;
+                $placeholders[] = '?';
+            }
+            if ($has_time_limit) {
+                $columns[] = 'time_limit';
+                $values[] = $time_limit;
+                $placeholders[] = '?';
+            }
+            if ($has_retry_limit) {
+                $columns[] = 'retry_limit';
+                $values[] = $retry_limit;
+                $placeholders[] = '?';
+            }
+            if ($has_randomize_q) {
+                $columns[] = 'randomize_questions';
+                $values[] = $randomize_questions;
+                $placeholders[] = '?';
+            }
+            if ($has_randomize_a) {
+                $columns[] = 'randomize_answers';
+                $values[] = $randomize_answers;
+                $placeholders[] = '?';
+            }
+            if ($has_show_answers) {
+                $columns[] = 'show_answers_after';
+                $values[] = $show_answers_after;
+                $placeholders[] = '?';
+            }
+            if ($has_created_by) {
+                $columns[] = 'created_by';
+                $values[] = $created_by;
+                $placeholders[] = '?';
+            }
+            if ($has_is_active) {
+                $columns[] = 'is_active';
+                $values[] = $is_active;
+                $placeholders[] = '?';
+            }
+            
+            $sql = "INSERT INTO quizzes (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($values);
+            
+            $quiz_id = $pdo->lastInsertId();
+            $_SESSION['success_message'] = "Quiz created successfully! You can now add questions.";
+            header("Location: manage_questions.php?quiz_id=" . $quiz_id);
+            exit;
+        } catch (PDOException $e) {
+            $_SESSION['error_message'] = "Error creating quiz: " . $e->getMessage();
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Quiz - Geo-LMS Teacher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <style>
+        :root {
+            --teacher-primary: #10b981;
+            --teacher-secondary: #059669;
+        }
+        
+        body {
+            background: #f4f7fc;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Override sidebar colors for teacher theme */
+        .sidebar {
+            background: linear-gradient(180deg, #059669 0%, #047857 100%);
+        }
+        
+        .sidebar-nav li.active a,
+        .sidebar-nav li a:hover {
+            background-color: var(--teacher-primary);
+        }
+        
+        .main-content {
+            background: #f4f7fc;
+        }
+        
+        .main-header h1 {
+            color: #1c3d5a;
+            margin-bottom: 5px;
+        }
+        
+        .main-header p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            max-width: 900px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--teacher-primary);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .form-help {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background: var(--teacher-primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--teacher-secondary);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <?php include 'includes/sidebar.php'; ?>
+
+    <main class="main-content">
+        <header class="main-header">
+            <h1>Create New Quiz</h1>
+            <p>Fill in the details below to create a new quiz</p>
+        </header>
+
+    <?php if (isset($_SESSION['error_message'])): ?>
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <?php echo htmlspecialchars($_SESSION['error_message']); unset($_SESSION['error_message']); ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="form-container">
+        <form method="POST" action="">
+            <?php echo csrf_token_field(); ?>
+            
+            <!-- Basic Information -->
+            <h3 class="section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
+            
+            <div class="form-group">
+                <label for="title">Quiz Title <span style="color: red;">*</span></label>
+                <input type="text" id="title" name="title" required placeholder="Enter quiz title">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" placeholder="Brief description of the quiz"></textarea>
+                <div class="form-help">This will be shown to students before they start the quiz</div>
+            </div>
+            
+            <?php if ($has_category || $has_difficulty): ?>
+            <div class="form-grid">
+                <?php if ($has_category): ?>
+                <div class="form-group">
+                    <label for="category_id">Category</label>
+                    <select id="category_id" name="category_id">
+                        <option value="">No Category</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo $cat['category_id']; ?>">
+                                <?php echo htmlspecialchars($cat['category_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($has_difficulty): ?>
+                <div class="form-group">
+                    <label for="difficulty">Difficulty Level</label>
+                    <select id="difficulty" name="difficulty">
+                        <option value="">Not Set</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+            
+            <!-- Quiz Settings -->
+            <h3 class="section-title"><i class="fas fa-cog"></i> Quiz Settings</h3>
+            
+            <div class="form-grid">
+                <?php if ($has_time_limit): ?>
+                <div class="form-group">
+                    <label for="time_limit">Time Limit (minutes)</label>
+                    <input type="number" id="time_limit" name="time_limit" min="0" placeholder="0 = No limit">
+                    <div class="form-help">Leave 0 for no time limit</div>
+                </div>
+                <?php endif; ?>
+                
+                <div class="form-group">
+                    <label for="passing_score">Passing Score (%)</label>
+                    <input type="number" id="passing_score" name="passing_score" min="0" max="100" value="60" step="0.01">
+                    <div class="form-help">Minimum score required to pass</div>
+                </div>
+                
+                <?php if ($has_retry_limit): ?>
+                <div class="form-group">
+                    <label for="retry_limit">Retry Limit</label>
+                    <input type="number" id="retry_limit" name="retry_limit" min="0" placeholder="0 = Unlimited">
+                    <div class="form-help">Maximum attempts allowed (0 for unlimited)</div>
+                </div>
+                <?php endif; ?>
+            </div>
+            
+            <!-- Advanced Options -->
+            <?php if ($has_randomize_q || $has_randomize_a || $has_show_answers || $has_is_active): ?>
+            <h3 class="section-title"><i class="fas fa-sliders-h"></i> Advanced Options</h3>
+            
+            <?php if ($has_randomize_q): ?>
+            <div class="checkbox-group">
+                <input type="checkbox" id="randomize_questions" name="randomize_questions" value="1">
+                <label for="randomize_questions">Randomize question order for each attempt</label>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($has_randomize_a): ?>
+            <div class="checkbox-group">
+                <input type="checkbox" id="randomize_answers" name="randomize_answers" value="1">
+                <label for="randomize_answers">Randomize answer options for each question</label>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($has_show_answers): ?>
+            <div class="checkbox-group">
+                <input type="checkbox" id="show_answers_after" name="show_answers_after" value="1" checked>
+                <label for="show_answers_after">Show correct answers after quiz completion</label>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($has_is_active): ?>
+            <div class="checkbox-group">
+                <input type="checkbox" id="is_active" name="is_active" value="1" checked>
+                <label for="is_active">Make quiz active immediately</label>
+            </div>
+            <?php endif; ?>
+            <?php endif; ?>
+            
+            <!-- Submit Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Create Quiz
+                </button>
+                <a href="quizzes.php" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    </main>
+</div>
+
+</body>
+</html>

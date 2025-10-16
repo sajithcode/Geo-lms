@@ -223,6 +223,7 @@ try {
             <a href="dashboard.php"><i class="fa-solid fa-gauge"></i> Dashboard</a>
             <a href="users.php"><i class="fa-solid fa-users"></i> Manage Users</a>
             <a href="quizzes.php"><i class="fa-solid fa-puzzle-piece"></i> Manage Quizzes</a>
+            <a href="quiz_categories.php"><i class="fa-solid fa-tags"></i> Quiz Categories</a>
             <a href="resources.php"><i class="fa-solid fa-book"></i> Manage Resources</a>
             <a href="feedback.php"><i class="fa-solid fa-message"></i> View Feedback</a>
             <a href="../auth/logout.php" style="background: #ef4444;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
