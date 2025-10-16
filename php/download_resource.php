@@ -12,12 +12,11 @@ if (!in_array($resource_type, ['note', 'ebook', 'pastpaper']) || !$resource_id) 
 }
 
 try {
-    // Determine table and ID field
+    // Determine table
     $table = $resource_type . 's';
-    $id_field = $resource_type . '_id';
     
     // Fetch resource
-    $stmt = $pdo->prepare("SELECT file_path, title FROM $table WHERE $id_field = ?");
+    $stmt = $pdo->prepare("SELECT filepath, title FROM $table WHERE id = ?");
     $stmt->execute([$resource_id]);
     $resource = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -26,7 +25,7 @@ try {
         die('Resource not found');
     }
     
-    $file_path = '../' . $resource['file_path'];
+    $file_path = '../' . $resource['filepath'];
     
     // Check if file exists
     if (!file_exists($file_path)) {
@@ -35,11 +34,7 @@ try {
     }
     
     // Increment download count
-    $stmt = $pdo->prepare("UPDATE $table SET download_count = download_count + 1 WHERE $id_field = ?");
-    $stmt->execute([$resource_id]);
-    
-    // Increment view count
-    $stmt = $pdo->prepare("UPDATE $table SET view_count = view_count + 1 WHERE $id_field = ?");
+    $stmt = $pdo->prepare("UPDATE $table SET downloads = downloads + 1 WHERE id = ?");
     $stmt->execute([$resource_id]);
     
     // Get file info

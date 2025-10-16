@@ -13,17 +13,22 @@ $has_notes_table = count($tables_check) > 0;
 
 // Get filter parameters
 $search = $_GET['search'] ?? '';
-$category_id = filter_input(INPUT_GET, 'category', FILTER_VALIDATE_INT);
+$category_filter = $_GET['category'] ?? '';
 $sort = $_GET['sort'] ?? 'recent';
 
-// Get categories
-$categories = [];
-try {
-    $stmt = $pdo->query("SELECT * FROM resource_categories ORDER BY category_name");
-    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $categories = [];
-}
+// Get predefined categories
+$categories = [
+    'Mathematics',
+    'Physics', 
+    'Chemistry',
+    'Computer Science',
+    'Engineering',
+    'General',
+    'Biology',
+    'Economics',
+    'Geography',
+    'History'
+];
 
 // Fetch notes from database
 $notes = [];
@@ -38,25 +43,22 @@ if ($has_notes_table) {
             $params[] = "%$search%";
         }
         
-        if ($category_id) {
-            $where_clauses[] = "n.category_id = ?";
-            $params[] = $category_id;
+        if (!empty($category_filter)) {
+            $where_clauses[] = "n.category = ?";
+            $params[] = $category_filter;
         }
         
         $where_sql = !empty($where_clauses) ? "WHERE " . implode(" AND ", $where_clauses) : "";
         
         $order_sql = "ORDER BY n.created_at DESC";
         if ($sort === 'popular') {
-            $order_sql = "ORDER BY n.download_count DESC";
+            $order_sql = "ORDER BY n.downloads DESC";
         } elseif ($sort === 'title') {
             $order_sql = "ORDER BY n.title ASC";
         }
         
-        $sql = "SELECT n.*, rc.category_name, u.username,
-                (SELECT AVG(rating) FROM resource_ratings WHERE resource_type = 'note' AND resource_id = n.note_id) as avg_rating,
-                (SELECT COUNT(*) FROM resource_ratings WHERE resource_type = 'note' AND resource_id = n.note_id) as rating_count
+        $sql = "SELECT n.*, u.username
                 FROM notes n 
-                LEFT JOIN resource_categories rc ON n.category_id = rc.category_id 
                 LEFT JOIN users u ON n.uploaded_by = u.user_id 
                 $where_sql
                 $order_sql";
@@ -335,8 +337,8 @@ include '../includes/header.php';
                     <select name="category" id="category">
                         <option value="">All Categories</option>
                         <?php foreach ($categories as $cat): ?>
-                            <option value="<?php echo $cat['category_id']; ?>" <?php echo $category_id == $cat['category_id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($cat['category_name']); ?>
+                            <option value="<?php echo htmlspecialchars($cat); ?>" <?php echo $category_filter == $cat ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($cat); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -356,7 +358,7 @@ include '../includes/header.php';
                     <i class="fas fa-search"></i> Search
                 </button>
                 
-                <?php if ($search || $category_id || $sort !== 'recent'): ?>
+                <?php if ($search || $category_filter || $sort !== 'recent'): ?>
                 <button type="button" class="btn-reset" onclick="window.location.href='notes.php'">
                     <i class="fas fa-times"></i> Clear
                 </button>
@@ -370,7 +372,7 @@ include '../includes/header.php';
             <i class="fas fa-sticky-note"></i>
             <h3>No Notes Found</h3>
             <p>
-                <?php if ($search || $category_id): ?>
+                <?php if ($search || $category_filter): ?>
                     No notes match your search criteria. Try adjusting your filters.
                 <?php else: ?>
                     No notes are available yet. Check back later!
@@ -385,30 +387,16 @@ include '../includes/header.php';
                     <div class="resource-title"><?php echo htmlspecialchars($note['title']); ?></div>
                     
                     <div class="resource-meta">
-                        <?php if ($note['category_name']): ?>
+                        <?php if (!empty($note['category'])): ?>
                             <span class="badge badge-category">
-                                <i class="fas fa-tag"></i> <?php echo htmlspecialchars($note['category_name']); ?>
+                                <i class="fas fa-tag"></i> <?php echo htmlspecialchars($note['category']); ?>
                             </span>
                         <?php endif; ?>
                         
                         <span class="badge badge-size">
-                            <i class="fas fa-file"></i> <?php echo number_format($note['file_size'] / 1024 / 1024, 2); ?> MB
+                            <i class="fas fa-file"></i> <?php echo number_format($note['filesize'] / 1024 / 1024, 2); ?> MB
                         </span>
                     </div>
-                    
-                    <?php if ($note['avg_rating']): ?>
-                    <div class="rating-display">
-                        <?php 
-                        $rating = round($note['avg_rating'], 1);
-                        for ($i = 1; $i <= 5; $i++): 
-                        ?>
-                            <i class="fas fa-star<?php echo $i <= $rating ? '' : '-o'; ?>"></i>
-                        <?php endfor; ?>
-                        <span style="color: #4a5568; font-size: 0.9em;">
-                            (<?php echo $note['rating_count']; ?>)
-                        </span>
-                    </div>
-                    <?php endif; ?>
                 </div>
                 
                 <?php if ($note['description']): ?>
@@ -419,15 +407,15 @@ include '../includes/header.php';
                 
                 <div class="resource-stats">
                     <span>
-                        <i class="fas fa-download"></i> <?php echo $note['download_count']; ?> downloads
+                        <i class="fas fa-download"></i> <?php echo $note['downloads']; ?> downloads
                     </span>
                     <span>
-                        <i class="fas fa-eye"></i> <?php echo $note['view_count']; ?> views
+                        <i class="fas fa-calendar"></i> <?php echo date('M j, Y', strtotime($note['created_at'])); ?>
                     </span>
                 </div>
                 
                 <div class="resource-actions">
-                    <a href="../php/download_resource.php?type=note&id=<?php echo $note['note_id']; ?>" class="btn-download">
+                    <a href="../php/download_resource.php?type=note&id=<?php echo $note['id']; ?>" class="btn-download">
                         <i class="fas fa-download"></i> Download
                     </a>
                 </div>
