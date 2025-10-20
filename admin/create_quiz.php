@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Quiz - Geo-LMS Admin</title>
+    <title>Create Quiz - Admin Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -132,26 +132,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <style>
         :root {
-            --admin-primary: #667eea;
-            --admin-secondary: #764ba2;
+            --admin-primary: #0a74da;
+            --admin-secondary: #1c3d5a;
         }
         
-        .admin-header {
-            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f7fc;
+        }
+        
+        .sidebar {
+            background: #1c3d5a;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, #0a74da 0%, #1c3d5a 100%);
             color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .form-container {
-            background: white;
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            max-width: 900px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(10, 116, 218, 0.3);
         }
-        
+
+        .page-header h1 {
+            margin: 0 0 8px 0;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header p {
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            opacity: 0.9;
+        }
+
+        .breadcrumb a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        .breadcrumb a:hover {
+            opacity: 0.7;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 30px;
+        }
+
+        /* Form Grid */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -160,25 +204,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #374151;
+            color: #4a5568;
+            font-size: 0.95em;
         }
         
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 1em;
             font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
         }
         
         .form-group input:focus,
@@ -186,6 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-group textarea:focus {
             outline: none;
             border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(10, 116, 218, 0.1);
         }
         
         .form-group textarea {
@@ -203,17 +250,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .checkbox-group input[type="checkbox"] {
             width: auto;
             cursor: pointer;
+            margin: 0;
         }
         
         .checkbox-group label {
             margin: 0;
             cursor: pointer;
             font-weight: 500;
+            color: #4a5568;
         }
         
         .form-help {
-            font-size: 12px;
-            color: #6b7280;
+            font-size: 0.85em;
+            color: #718096;
             margin-top: 4px;
         }
         
@@ -228,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transition: all 0.3s;
             border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1em;
         }
         
         .btn-primary {
@@ -238,16 +287,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         .btn-primary:hover {
             background: var(--admin-secondary);
-            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(10, 116, 218, 0.3);
         }
         
         .btn-secondary {
-            background: #6b7280;
-            color: white;
+            background: #e2e8f0;
+            color: #4a5568;
         }
         
         .btn-secondary:hover {
-            background: #4b5563;
+            background: #cbd5e0;
         }
         
         .button-group {
@@ -257,12 +306,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .alert {
-            padding: 16px;
+            padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         
         .alert-error {
@@ -271,153 +320,199 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid #ef4444;
         }
         
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        
         .section-title {
-            font-size: 18px;
+            font-size: 1.2em;
             font-weight: 600;
-            color: #111827;
+            color: #2d3748;
             margin: 30px 0 15px 0;
             padding-bottom: 10px;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 20px;
+            }
+
+            .page-header h1 {
+                font-size: 1.5em;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="admin-dashboard">
-    <div class="admin-header">
-        <h1>
-            <i class="fa-solid fa-plus"></i>
-            Create New Quiz
-        </h1>
-        <p>Fill in the details below to create a new quiz</p>
-    </div>
+<div class="dashboard-container">
+    <?php include 'includes/sidebar.php'; ?>
 
-    <?php if (isset($_SESSION['error_message'])): ?>
-        <div class="alert alert-error">
-            <i class="fas fa-exclamation-circle"></i>
-            <?php echo htmlspecialchars($_SESSION['error_message']); unset($_SESSION['error_message']); ?>
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-plus-circle"></i> Create New Quiz</h1>
+            <p>Fill in the details below to create a new quiz</p>
+            <div class="breadcrumb">
+                <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
+                <span>→</span>
+                <a href="quizzes.php"><i class="fas fa-puzzle-piece"></i> Quizzes</a>
+                <span>→</span>
+                <span>Create New Quiz</span>
+            </div>
         </div>
-    <?php endif; ?>
 
-    <div class="form-container">
-        <form method="POST" action="">
-            <?php echo csrf_token_field(); ?>
-            
-            <!-- Basic Information -->
-            <h3 class="section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
-            
-            <div class="form-group">
-                <label for="title">Quiz Title <span style="color: red;">*</span></label>
-                <input type="text" id="title" name="title" required placeholder="Enter quiz title">
+        <?php if (isset($_SESSION['error_message'])): ?>
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <?php echo htmlspecialchars($_SESSION['error_message']); unset($_SESSION['error_message']); ?>
             </div>
-            
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" name="description" placeholder="Brief description of the quiz"></textarea>
-                <div class="form-help">This will be shown to students before they start the quiz</div>
-            </div>
-            
-            <?php if ($has_category || $has_difficulty): ?>
-            <div class="form-grid">
-                <?php if ($has_category): ?>
+        <?php endif; ?>
+
+        <div class="form-container">
+            <form method="POST" action="">
+                <?php echo csrf_token_field(); ?>
+                
+                <!-- Basic Information -->
+                <h3 class="section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
+                
                 <div class="form-group">
-                    <label for="category_id">Category</label>
-                    <select id="category_id" name="category_id">
-                        <option value="">No Category</option>
-                        <?php foreach ($categories as $cat): ?>
-                            <option value="<?php echo $cat['category_id']; ?>">
-                                <?php echo htmlspecialchars($cat['category_name']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label for="title">Quiz Title <span style="color: red;">*</span></label>
+                    <input type="text" id="title" name="title" required placeholder="Enter quiz title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" placeholder="Brief description of the quiz"></textarea>
+                    <div class="form-help">This will be shown to students before they start the quiz</div>
+                </div>
+                
+                <?php if ($has_category || $has_difficulty): ?>
+                <div class="form-grid">
+                    <?php if ($has_category): ?>
+                    <div class="form-group">
+                        <label for="category_id">Category</label>
+                        <select id="category_id" name="category_id">
+                            <option value="">No Category</option>
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo $cat['category_id']; ?>">
+                                    <?php echo htmlspecialchars($cat['category_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($has_difficulty): ?>
+                    <div class="form-group">
+                        <label for="difficulty">Difficulty Level</label>
+                        <select id="difficulty" name="difficulty">
+                            <option value="">Not Set</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 <?php endif; ?>
                 
-                <?php if ($has_difficulty): ?>
-                <div class="form-group">
-                    <label for="difficulty">Difficulty Level</label>
-                    <select id="difficulty" name="difficulty">
-                        <option value="">Not Set</option>
-                        <option value="easy">Easy</option>
-                        <option value="medium">Medium</option>
-                        <option value="hard">Hard</option>
-                    </select>
+                <!-- Quiz Settings -->
+                <h3 class="section-title"><i class="fas fa-cog"></i> Quiz Settings</h3>
+                
+                <div class="form-grid">
+                    <?php if ($has_time_limit): ?>
+                    <div class="form-group">
+                        <label for="time_limit">Time Limit (minutes)</label>
+                        <input type="number" id="time_limit" name="time_limit" min="0" placeholder="0 = No limit">
+                        <div class="form-help">Leave 0 for no time limit</div>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="form-group">
+                        <label for="passing_score">Passing Score (%)</label>
+                        <input type="number" id="passing_score" name="passing_score" min="0" max="100" value="60" step="0.01">
+                        <div class="form-help">Minimum score required to pass</div>
+                    </div>
+                    
+                    <?php if ($has_retry_limit): ?>
+                    <div class="form-group">
+                        <label for="retry_limit">Retry Limit</label>
+                        <input type="number" id="retry_limit" name="retry_limit" min="0" placeholder="0 = Unlimited">
+                        <div class="form-help">Maximum attempts allowed (0 for unlimited)</div>
+                    </div>
+                    <?php endif; ?>
                 </div>
-                <?php endif; ?>
-            </div>
-            <?php endif; ?>
-            
-            <!-- Quiz Settings -->
-            <h3 class="section-title"><i class="fas fa-cog"></i> Quiz Settings</h3>
-            
-            <div class="form-grid">
-                <?php if ($has_time_limit): ?>
-                <div class="form-group">
-                    <label for="time_limit">Time Limit (minutes)</label>
-                    <input type="number" id="time_limit" name="time_limit" min="0" placeholder="0 = No limit">
-                    <div class="form-help">Leave 0 for no time limit</div>
+                
+                <!-- Advanced Options -->
+                <?php if ($has_randomize_q || $has_randomize_a || $has_show_answers || $has_is_active): ?>
+                <h3 class="section-title"><i class="fas fa-sliders-h"></i> Advanced Options</h3>
+                
+                <?php if ($has_randomize_q): ?>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="randomize_questions" name="randomize_questions" value="1">
+                    <label for="randomize_questions">Randomize question order for each attempt</label>
                 </div>
                 <?php endif; ?>
                 
-                <div class="form-group">
-                    <label for="passing_score">Passing Score (%)</label>
-                    <input type="number" id="passing_score" name="passing_score" min="0" max="100" value="60" step="0.01">
-                    <div class="form-help">Minimum score required to pass</div>
-                </div>
-                
-                <?php if ($has_retry_limit): ?>
-                <div class="form-group">
-                    <label for="retry_limit">Retry Limit</label>
-                    <input type="number" id="retry_limit" name="retry_limit" min="0" placeholder="0 = Unlimited">
-                    <div class="form-help">Maximum attempts allowed (0 for unlimited)</div>
+                <?php if ($has_randomize_a): ?>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="randomize_answers" name="randomize_answers" value="1">
+                    <label for="randomize_answers">Randomize answer options for each question</label>
                 </div>
                 <?php endif; ?>
-            </div>
-            
-            <!-- Advanced Options -->
-            <?php if ($has_randomize_q || $has_randomize_a || $has_show_answers || $has_is_active): ?>
-            <h3 class="section-title"><i class="fas fa-sliders-h"></i> Advanced Options</h3>
-            
-            <?php if ($has_randomize_q): ?>
-            <div class="checkbox-group">
-                <input type="checkbox" id="randomize_questions" name="randomize_questions" value="1">
-                <label for="randomize_questions">Randomize question order for each attempt</label>
-            </div>
-            <?php endif; ?>
-            
-            <?php if ($has_randomize_a): ?>
-            <div class="checkbox-group">
-                <input type="checkbox" id="randomize_answers" name="randomize_answers" value="1">
-                <label for="randomize_answers">Randomize answer options for each question</label>
-            </div>
-            <?php endif; ?>
-            
-            <?php if ($has_show_answers): ?>
-            <div class="checkbox-group">
-                <input type="checkbox" id="show_answers_after" name="show_answers_after" value="1" checked>
-                <label for="show_answers_after">Show correct answers after quiz completion</label>
-            </div>
-            <?php endif; ?>
-            
-            <?php if ($has_is_active): ?>
-            <div class="checkbox-group">
-                <input type="checkbox" id="is_active" name="is_active" value="1" checked>
-                <label for="is_active">Make quiz active immediately</label>
-            </div>
-            <?php endif; ?>
-            <?php endif; ?>
-            
-            <!-- Submit Buttons -->
-            <div class="button-group">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Create Quiz
-                </button>
-                <a href="quizzes.php" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Cancel
-                </a>
-            </div>
-        </form>
-    </div>
+                
+                <?php if ($has_show_answers): ?>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show_answers_after" name="show_answers_after" value="1" checked>
+                    <label for="show_answers_after">Show correct answers after quiz completion</label>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($has_is_active): ?>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="is_active" name="is_active" value="1" checked>
+                    <label for="is_active">Make quiz active immediately</label>
+                </div>
+                <?php endif; ?>
+                <?php endif; ?>
+                
+                <!-- Submit Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Create Quiz
+                    </button>
+                    <a href="quizzes.php" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </main>
 </div>
 
 </body>
