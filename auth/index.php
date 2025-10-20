@@ -81,29 +81,7 @@ if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
             </div>
         </div>
 
-        <!-- Role Information Box -->
-        <div class="role-info-box">
-            <h3 style="margin: 0 0 16px; color: #111827; font-size: 18px; text-align: center;">
-                <i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i> Access Levels
-            </h3>
-            <div class="role-grid">
-                <div class="role-item">
-                    <div class="role-icon student-icon">👨‍🎓</div>
-                    <h4>Student</h4>
-                    <p>Access learning materials, take quizzes, track progress</p>
-                </div>
-                <div class="role-item">
-                    <div class="role-icon teacher-icon">👨‍🏫</div>
-                    <h4>Teacher</h4>
-                    <p>Create quizzes, upload resources, monitor students</p>
-                </div>
-                <div class="role-item">
-                    <div class="role-icon admin-icon">👨‍💼</div>
-                    <h4>Admin</h4>
-                    <p>Full system access, user management, analytics</p>
-                </div>
-            </div>
-        </div>
+       
 
         <footer class="footer">
             <p>© 2025 Self-Learning Hub | All Rights Reserved</p>
